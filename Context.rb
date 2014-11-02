@@ -313,3 +313,43 @@ class SetMatrix
   end
 end
 
+class Print
+  def check(tabla)
+    for expr in @printers do
+      if expr.type.eql?  Identifier
+	ident = tabla.find(expr.t)
+	if ident.nil? then
+	  @type = Error
+	  $ErroresContexto << NoDeclarada::new(@identifier)
+	  return
+	end
+      else
+	unless expr.class.eql? TkString then
+	  expr.check(tabla)
+	end
+      end
+    end
+  end
+end
+    
+class Block
+  def check(tabla)
+    
+    if !@definitions.empty?
+      for definition in @definitions
+        tabla.insert(definition.identifier, definition.type)
+      end
+      rescue RedefineError => r
+      $ErroresContexto << r
+    end
+    checkInstructions(@instructions, tabla)
+  end
+end
+
+class Program
+  tabla = SymTable::new(nil)
+  
+  checkInstructions(@instructions, tabla)
+  
+      
+      
