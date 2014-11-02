@@ -18,8 +18,8 @@ end
 
 class Identifier
   def check(tabla)
-    variable = tabla.find(@attr_value[0][1].text)
-    if variable.nil? then
+    identifier = tabla.find(@identifier)
+    if identifier.nil? then
       @type = TipoError
       $ErroresContexto << NoDeclarada::new(@line,
                                            @column,

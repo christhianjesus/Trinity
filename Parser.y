@@ -123,7 +123,7 @@ rule
 			      | 'read'  'identifier'                                                  { result = Read::new(val[1])}
 			      | 'set'   'identifier' '=' Expression                                   { result = Set::new(val[1],val[3])}
 			      | 'set'   'identifier' '[' Expression ']' '=' Expression                { result = SetMatrix::new(val[1],val[3],[],val[6])}
-		              | 'set'   'identifier' '[' Expression ',' Expression ']' '=' Expression { result = SetMatrix::new(val[1],val[3],val[5],val[8])}
+		          | 'set'   'identifier' '[' Expression ',' Expression ']' '=' Expression { result = SetMatrix::new(val[1],val[3],val[5],val[8])}
 			      | Expression                                                            { result = val[0]} 
 			      ;
 
@@ -175,8 +175,8 @@ rule
                 | Expression '[' Expression                ']'   { result = MatrixEval::new(val[0],val[2],[])}                                                 
                 | Expression '[' Expression ',' Expression ']'   { result = MatrixEval::new(val[0],val[2],[4])}
                 | '{' MatrixExpression '}'                       { result = MatrixExpression::new(val[1])}
-                | 'digit' 				         { result = Digit::new(val[0])}
-                | 'identifier' 					 { result = Identifier::new(val[0])}
+                | 'digit'            	                         { result = Digit::new(val[0])}
+                | 'identifier' 	                                 { result = Identifier::new(val[0])}
                 | 'true'                                         { result = True::new(val[0])}
                 | 'false'                                        { result = False::new(val[0])}
                 | 'identifier' '(' Expressions ')'               { result = Invoke::new(val[0],val[2])}
