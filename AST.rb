@@ -28,7 +28,7 @@ $as_tree = [
                                      ['Minus', %w[], []],
                                  ]],
                                  ['Multiplication', %w[], []],
-                                 ['Didisible', %w[], [
+                                 ['Divisible', %w[], [
                                      ['Division', %w[], []],
                                      ['Remain', %w[], []],
                                      ['Div', %w[], []],
@@ -62,12 +62,13 @@ $as_tree = [
                              ['Uminus', %w[expression], []],
                              ['Transpose', %w[expression], []],
                              ['MatrixEval', %w[expression1 expression2 expression3], []],
-                             ['MatrixExpression', %w[expressions], []],
-                             
+                             ['MatrixExpression', %w[expressions], []],                             
                              ['Digit', %w[digit], []],
-                             ['Identifier', %w[identifier], []],                 
-                             ['True', %w[], []],
-                             ['False', %w[], []],
+                             ['Identifier', %w[identifier], []],
+                             ['Bool', %w[], [                  
+                                 ['True', %w[], []],
+                                 ['False', %w[], []],
+                             ]],                  
                              ['Invoke', %w[indentifier expressions], []]
                             ]]
                  ]]

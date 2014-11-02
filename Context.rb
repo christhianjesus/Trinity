@@ -97,5 +97,34 @@ class Divisible
   end
 end
 
+class ArithmeticCross
+  def check(tabla)
+    @expression1.check(tabla)
+    @expression2.check(tabla)
+    unless (@expression1.type.eql? Digit and @expression2.type.eql? MatrixExpression) or
+	   (@expression2.type.eql? Digit and @expression1.type.eql? MatrixExpression) then    
+      $ErroresContexto << ErrorDeTipo::new(@line,
+                                           @column,
+                                           'CROSS OPERATION',
+                                           @expression1,
+                                           @expression2)
+    end
+  @type = MatrixExpression   
+  end
+end
 
+class Logical
+  def check(tabla)
+    @expression1.check(tabla)
+    @expression2.check(tabla)
+    unless @expression1.type.eql? Bool and @expression2.type.eql? MatrixExpression    
+      $ErroresContexto << ErrorDeTipo::new(@line,
+                                           @column,
+                                           'CROSS OPERATION',
+                                           @expression1,
+                                           @expression2)
+    end
+  @type = self.class  
+  end
+end
     
