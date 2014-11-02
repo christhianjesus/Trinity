@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#SymTable
+#SymbolicTable
 class SymTableError < RuntimeError; end
 
 class RedefineError < SymTableError
@@ -9,7 +9,7 @@ class RedefineError < SymTableError
   end
 
   def to_s
-    "Error en línea #{@token.line}, columna #{@token.column}: la variable '#{@token.text}' fue previamente declarada en la línea #{@token_viejo.line}, columna #{@token_viejo.column}."
+    "Error en línea #{@token.l}, columna #{@token.c}: la variable '#{@token.t}' fue previamente declarada en la línea #{@token_viejo.l}, columna #{@token_viejo.co}."
   end
 end
 
@@ -19,7 +19,7 @@ class DeleteError < SymTableError
   end
 
   def to_s
-    "Error no se puede eliminar el token '#{@token.text}'"
+    "Error no se puede eliminar el token '#{@token.t}'"
   end
 end
 
@@ -27,33 +27,28 @@ class SymTable
 
   def initialize(padre = nil)
     @padre = padre
+    @hijos = []
     @table = {}
   end
 
   def insert(token, tipo)
-    raise RedefineError::new(token, find(token.text)[:token]) if isMember?(token.text)
+    raise RedefineError::new(token, find(token.t)[:token]) if isMember?(token.t)
     @table[token.text] = { :token => token, :tipo => tipo}
   end
 
-  def delete(nombre)
-    raise DeleteError::new token unless @table.has_key?(nombre)
-    @table.delete(nombre)
+  def delete(token)
+    raise DeleteError::new(token) unless @table.has_key?(token)
+    @table.delete(token)
   end
 
-  def find(nombre)
-    if @table.has_key?(nombre) then
-      return @table[nombre]
-    elsif @padre.nil? then
-      return nil
-    end
-    @padre.find(nombre)
+  def find(token)
+    return @table[token] if @table.has_key?(token) 
+    return nil if @padre.nil?
+    return @padre.find(token)
   end
 
-  def isMember?(nombre)
-    if @padre.nil? then
-      return @table.has_key?(nombre)
-    else
-      return (@table.has_key?(nombre) or @padre.isMember?(nombre))
-    end
+  def isMember?(token)
+    return @table.has_key?(token) if @padre.nil?
+    return (@table.has_key?(token) or @padre.isMember?(token))
   end
 end
