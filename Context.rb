@@ -1,3 +1,5 @@
+class Error; end
+
 class True
   def check(tabla)
     @type = self.class
@@ -18,14 +20,12 @@ end
 
 class Identifier
   def check(tabla)
-    variable = tabla.find(@attr_value[0][1].text)
-    if variable.nil? then
-      @type = TipoError
-      $ErroresContexto << NoDeclarada::new(@line,
-                                           @column,
-                                           @attr_value[0][1].text)
+    identifier = tabla.find(@identifier.t)
+    if identifier.nil? then
+      @type = Error
+      $ErroresContexto << NoDeclarada::new(@identifier)
     else
-      @type = variable[:tipo]
+      @type = identifier[:tipo]
     end
   end
 end

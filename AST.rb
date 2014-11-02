@@ -28,7 +28,7 @@ $as_tree = [
                                      ['Minus', %w[], []],
                                  ]],
                                  ['Multiplication', %w[], []],
-                                 ['Didisible', %w[], [
+                                 ['Divisible', %w[], [
                                      ['Division', %w[], []],
                                      ['Remain', %w[], []],
                                      ['Div', %w[], []],

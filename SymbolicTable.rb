@@ -32,23 +32,23 @@ class SymTable
   end
 
   def insert(token, tipo)
-    raise RedefineError::new(token, find(token.t)[:token]) if isMember?(token.t)
-    @table[token.text] = { :token => token, :tipo => tipo}
+    raise RedefineError::new(token, @table[token.t][:token]) if @table.has_key?(token.t)
+    @table[token.t] = { :token => token, :tipo => tipo}
   end
 
-  def delete(token)
-    raise DeleteError::new(token) unless @table.has_key?(token)
-    @table.delete(token)
+  def delete(tokent)
+    raise DeleteError::new(tokent) unless @table.has_key?(tokent)
+    @table.delete(tokent)
   end
 
-  def find(token)
-    return @table[token] if @table.has_key?(token) 
+  def find(tokent)
+    return @table[tokent] if @table.has_key?(tokent) 
     return nil if @padre.nil?
-    return @padre.find(token)
+    return @padre.find(tokent)
   end
 
-  def isMember?(token)
-    return @table.has_key?(token) if @padre.nil?
-    return (@table.has_key?(token) or @padre.isMember?(token))
+  def isMember?(tokent)
+    return @table.has_key?(tokent) if @padre.nil?
+    return (@table.has_key?(tokent) or @padre.isMember?(tokent))
   end
 end
