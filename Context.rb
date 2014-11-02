@@ -36,14 +36,14 @@ class Additive
   def check(tabla)
     @expression1.check(tabla)
     @expression2.check(tabla)
-    unless @expression1.type.eql? @expression2.type and 
-      (@expression1.type.eql? Digit or @expression1.type.eql? MatrixExpression) then
+    unless @expression1.class.eql? @expression2.class and 
+      (@expression1.class.eql? Digit or @expression1.class.eql? MatrixExpression) then
       $ErroresContexto << ErrorDeTipo::new(@line,
                                            @column,
                                            'SUMA',
                                            @attr_value[0][1].type.name_tk,
                                            @attr_value[1][1].type.name_tk)
     end
-    @type = TkInteger
+    @type = @expression1.class
   end
 end
