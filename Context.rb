@@ -99,6 +99,7 @@ class Logical
   def check(tabla)
     @expression1.check(tabla)
     @expression2.check(tabla)
+
     unless @expression1.type.equal? Bool and @expression2.type.equal? Bool    
       $ErroresContexto << ErrorDeTipo::new(self.class,@expression1,@expression2)
     end
@@ -155,5 +156,57 @@ def check(tabla)
       $ErroresContexto << ErrorDeTipo::new(self.class, @expression)
     end
     @type = MatrixExpression
+  end
+end
+
+class MatrixEval
+  def check(tabla)
+    identifier = tabla.find(@expression1.t)
+    
+    if identifier.nil? then
+      @type = Error
+      $ErroresContexto << NoDeclarada::new(@identifier)
+    end    
+    unless identifier.type.eql? MatrixExpression  then
+      @type = Error
+      $ErroresContexto << ErrorDeTipo::new(@identifier)
+    end
+    
+    if (/^\d+$/.match(@expression2).nil?) then
+      $ErroresContexto << ErrorMatrixMalLlamada::new(@expression1)
+    end    
+    unless (0 <= @expression2.to_i <= identifier.row) then
+      $ErroresContexto << ErrorMatrixMalLlamada::new(@expression1)
+    end
+    
+    case @expression3  
+    when nil
+      unless (identifier.col.nil?) then
+        $ErroresContexto << ErrorMatrixMalLlamada::new(@expression1) 
+      end
+    when Digit
+      if (/^\d+$/.match(@expression3).nil?) then
+        $ErroresContexto << ErrorMatrixMalLlamada::new(@expression1)
+      end    
+      unless (0 <= @expression3.to_i <= identifier.row) then
+	$ErroresContexto << ErrorMatrixMalLlamada::new(@expression1)
+      end
+    else
+      $ErroresContexto << ErrorMatrixMalLlamada::new(@expression1)
+      
+    @type = Digit
+  end
+end
+
+class Conditional
+  def check(tabla)
+    @expression.check(tabla)
+    unless @expression.type.eql? Bool then
+      $ErroresContexto << ErrorCondicionCondicional::new(@line,
+                                                         @column,
+                                                         @condicion.type.name_tk)
+    end
+    @instructions1.check(tabla)
+    if 
   end
 end
