@@ -13,7 +13,7 @@ $as_tree = [
                          ['Definition',  %w[type identifier expression], []],
                          ['Instruction', %w[], [
                              ['Block',          %w[definitions instructions], []],
-                             ['Conditional',    %w[expression intructions1 instructions2], []],
+                             ['Conditional',    %w[expression instructions1 instructions2], []],
                              ['For',            %w[identifier expression instructions], []],
                              ['While',          %w[expression instructions], []],
                              ['Print',          %w[printers], []],

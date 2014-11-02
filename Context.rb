@@ -3,6 +3,8 @@ class Error; end
 class Bool
   def check(tabla)
     @type = self.class
+    @line = 
+    @col
   end
 end
 
@@ -15,7 +17,7 @@ end
 class MatrixExpression
   def check(tabla)
     @expressions.each.map {|exp| exp.check(tabla)}
-    @expressions.each.map {|exp| $ErroresContexto << ErrorDeTipo::new(exp) unless exp.type.equal? Digit}
+    @expressions.each.map {|exp| $ErroresContexto << ErrorDeTipo::new(exp, Digit) unless exp.type.equal? Digit}
     @expressions.each do |exps|
       n = exps.length if n.nil?
       err = exps.length != n if err.nil? or !err 
@@ -44,13 +46,13 @@ class Additive
   def check(tabla)
     @expression1.check(tabla)
     @expression2.check(tabla)
-    unless @expression1.type.equal? @expression2.type and 
+    unless @expression1.type.equal? @expression2.type and
       (@expression1.type.equal? Digit or @expression1.type.equal? MatrixExpression) then
       $ErroresContexto << ErrorDeTipo::new(self.class,@expression1,@expression2)
     end
     unless @expression1.row == @expression2.row and @expression1.col == @expression2.col
       $ErroresContexto << ErrorDeTamanioMatrices::new(@expression1, @expression2)
-    end if @expression1.type.eql MatrixExpression            
+    end if @expression1.type.eql MatrixExpression
     @type = @expression1.type
   end
 end
