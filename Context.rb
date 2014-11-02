@@ -117,14 +117,82 @@ class Logical
   def check(tabla)
     @expression1.check(tabla)
     @expression2.check(tabla)
-    unless @expression1.type.eql? Bool and @expression2.type.eql? MatrixExpression    
+    unless @expression1.type.eql? Bool and @expression2.type.eql? Bool    
       $ErroresContexto << ErrorDeTipo::new(@line,
                                            @column,
-                                           'CROSS OPERATION',
+                                           'LOGICAL OPERATION',
                                            @expression1,
                                            @expression2)
     end
-  @type = self.class  
+  @type =  @expression1.type
   end
 end
-    
+
+class Comparison
+  def check(tabla)
+    @expression1.check(tabla)
+    @expression2.check(tabla)
+    unless @expression1.type.eql? Digit and @expression2.type.eql? Digit    
+      $ErroresContexto << ErrorDeTipo::new(@line,
+                                           @column,
+                                           'COMPARISON OPERATION',
+                                           @expression1,
+                                           @expression2)
+    end
+  @type = Bool
+  end
+end
+
+class Equality
+  def check(tabla)
+    @expression1.check(tabla)
+    @expression2.check(tabla)
+    unless @expression1.type.eql? @expression2.type    
+      $ErroresContexto << ErrorDeTipo::new(@line,
+                                           @column,
+                                           'EQUALTY OPERATION',
+                                           @expression1,
+                                           @expression2)
+    end
+  @type = Bool
+  end
+end
+
+class Not
+def check(tabla)
+    @expression.check(tabla)
+    unless @expression.type.eql? Bool   
+      $ErroresContexto << ErrorDeTipoUnario::new(@line,
+                                                 @column,
+                                                 'NEGATION',
+                                                 @expression)
+    end
+  @type = Bool
+  end
+end
+
+class Uminus
+def check(tabla)
+    @expression.check(tabla)
+    unless (@expression.type.eql? Digit) or (@expression.type.eql? MatrixExpression)  
+      $ErroresContexto << ErrorDeTipo::new(@line,
+                                           @column,
+                                           'UMINUS',
+                                           @expression)
+    end
+  @type = @expression.type
+  end
+end
+
+class Transpose
+def check(tabla)
+    @expression.check(tabla)
+    unless @expression.type.eql? MatrixExpression
+      $ErroresContexto << ErrorDeTipo::new(@line,
+                                           @column,
+                                           'UMINUS',
+                                           @expression)
+    end
+  @type = @expression.type
+  end
+end
