@@ -164,34 +164,41 @@ class MatrixEval
     if identifier.nil? then
       @type = Error
       $ErroresContexto << NoDeclarada::new(@identifier)
+      return
     end    
     unless identifier.type.eql? MatrixExpression  then
       @type = Error
       $ErroresContexto << ErrorDeTipo::new(@identifier)
+      return
     end
     
     if (/^\d+$/.match(@expression2).nil?) then
       $ErroresContexto << ErrorMatrixMalLlamada::new(@expression1)
+      return
     end    
     unless (0 <= @expression2.to_i <= identifier.row) then
       $ErroresContexto << ErrorMatrixMalLlamada::new(@expression1)
+      return
     end
     
     case @expression3  
     when nil
       unless (identifier.col.nil?) then
         $ErroresContexto << ErrorMatrixMalLlamada::new(@expression1) 
+	return
       end
     when Digit
       if (/^\d+$/.match(@expression3).nil?) then
         $ErroresContexto << ErrorMatrixMalLlamada::new(@expression1)
+	return
       end    
       unless (0 <= @expression3.to_i <= identifier.row) then
 	$ErroresContexto << ErrorMatrixMalLlamada::new(@expression1)
+	return
       end
     else
       $ErroresContexto << ErrorMatrixMalLlamada::new(@expression1)
-      
+      return     
     @type = Digit
   end
 end
@@ -200,11 +207,98 @@ class Conditional
   def check(tabla)
     @expression.check(tabla)
     unless @expression.type.eql? Bool then
-      $ErroresContexto << ErrorCondicionCondicional::new(@line,
-                                                         @column,
-                                                         @condicion.type.name_tk)
+      $ErroresContexto << ErrorCondicional::new(@expression)
     end
     @instructions1.check(tabla)
-    if 
+    unless @instructions2.nil? then
+      @instructions1.check(tabla)
+    end
   end
 end
+
+class While
+  def check(tabla)
+    @expression.check(tabla)
+    unless @expression.type.eql? Bool then
+      $ErroresContexto << ErrorCondicional::new(@expression)
+    end
+    @instructions.check(tabla)
+    end
+  end
+end
+
+class For
+  def check(tabla)
+    identifier = tabla.find(@expression1.t)
+    if identifier.nil? then
+      @type = Error
+      $ErroresContexto << NoDeclarada::new(@identifier)
+      return
+    end 
+    @expression.check(tabla)
+    unless @expression.type.eql? MatrixExpression then
+      $ErroresContexto << ErrorFor::new(@expression)
+      return
+    end
+    @instructions.check(tabla)
+    end
+  end
+end
+
+class Read
+  def check(tabla)
+    ident = tabla.find(@identifier.t)
+    if identifier.nil? then
+      @type = Error
+      $ErroresContexto << NoDeclarada::new(@identifier)
+      return
+    end
+    @expression.check(tabla)
+    
+  end
+end
+
+class Set
+  def check(tabla)
+    ident = tabla.find(@identifier.t)
+    if ident.nil? then
+      @type = Error
+      $ErroresContexto << NoDeclarada::new(@identifier)
+      return
+    end
+    @expression.check(tabla)
+    unless @expression.type.eql? ident.type then
+      $ErroresContexto << ErrorDeTipo::new(self.class,@identifier)
+  end
+end
+
+class SetMatrix
+  def check(tabla)
+    ident = tabla.find(@identifier.t)
+    if ident.nil? then
+      @type = Error
+      $ErroresContexto << NoDeclarada::new(@identifier)
+      return
+    end
+    unless @expression.type.eql? MatrixExpression then
+      $ErroresContexto << ErrorFor::new(@expression)
+      return
+    end
+    if @expression2.nil? then
+      if (indent.row != 1) and (indent.col != 1) then
+	$ErroresContexto << ErrorMatrixMalLlamada::new(@expression1)
+	return
+      end
+      if /^\d+$/.match(@expression1).nil? then
+        $ErroresContexto << ErrorMatrixMalLlamada::new(@expression1)
+        return
+      end
+    else
+      if /^\d+$/.match(@expression1).nil? and /^\d+$/.match(@expression2).nil? then
+        $ErroresContexto << ErrorMatrixMalLlamada::new(@expression1)      
+      end
+    end
+    @expression3.check(tabla)
+  end
+end
+
