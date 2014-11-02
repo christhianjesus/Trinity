@@ -17,8 +17,8 @@ end
 
 class NoDeclarada < ContextError
   def initialize(var)
-    @linea = var.line
-    @columna = var.column
+    @linea = var.l
+    @columna = var.c
     @nombre = var.t
   end
 
@@ -64,7 +64,16 @@ class ErrorDeTamanioMatrices < ContextError
   end
 end
 
+class ErrorMatrixMalLlamada < ContextError
+  def initialize(exp)
+    @linea = exp.line
+    @columna = exp.column
+  end
 
+  def to_s
+    "Error cerca de la línea #{@linea} y columna #{@columna}: Matrix mal formada."
+  end
+end
 
 class ErrorDeTipoAsignacion < ContextError
   def initialize(linea, columna, tipo_asig, nombre, tipo_var)

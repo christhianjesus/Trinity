@@ -3,16 +3,16 @@ class Error; end
 class Bool
   def check(tabla)
     @type = self.class
-    @line = elem.l
-    @column = elem.c
+    @line = @elem.l
+    @column = @elem.c
   end
 end
 
 class Digit
   def check(tabla)
     @type = self.class
-    @line = digit.l
-    @column = digit.c
+    @line = @digit.l
+    @column = @digit.c
   end
 end
 
@@ -61,6 +61,12 @@ class Additive
       $ErroresContexto << ErrorDeTamanioMatrices::new(@expression1, self.class)
     end if @expression1.type == MatrixExpression and @expression2.type == MatrixExpression
     @type = @expression1.type
+    @line = @expressions1.line
+    @column = @expressions1.column
+    if @type = MatrixExpression then
+      @row = @expression1.row
+      @col = @expression1.col
+    end
   end
 end
 
@@ -76,6 +82,12 @@ class Multiplication
         $ErroresContexto << ErrorDeTamanioMatrices::new(@expression1, self.class)
     end if @expression1.type == MatrixExpression and @expression2.type == MatrixExpression
     @type = @expression1.type
+    @line = @expressions1.line
+    @column = @expressions1.column
+    if @type = MatrixExpression then
+      @row = @expression1.row
+      @col = @expression2.col
+    end
   end
 end
 
@@ -87,6 +99,8 @@ class Divisible
       $ErroresContexto << ErrorDeTipo::new(self.class, @expression1, @expression2)
     end
     @type = Digit
+    @line = @expressions1.line
+    @column = @expressions1.column
   end
 end
 
@@ -98,7 +112,11 @@ class ArithmeticCross
 	         (@expression2.type == Digit and @expression1.type == MatrixExpression) then    
       $ErroresContexto << ErrorDeTipo::new(self.class, @expression1, @expression2)
     end
-    @type = MatrixExpression   
+    @type = MatrixExpression
+    @line = @expressions1.line
+    @column = @expressions1.column
+    @row = @expression1.row
+    @col = @expression2.col
   end
 end
 
@@ -110,6 +128,8 @@ class Logical
       $ErroresContexto << ErrorDeTipo::new(self.class, @expression1, @expression2)
     end
     @type =  Bool
+    @line = @expressions1.line
+    @column = @expressions1.column
   end
 end
 
@@ -121,6 +141,8 @@ class Comparison
       $ErroresContexto << ErrorDeTipo::new(self.class, @expression1, @expression2)
     end
     @type = Bool
+    @line = @expressions1.line
+    @column = @expressions1.column
   end
 end
 
@@ -132,6 +154,8 @@ class Equality
       $ErroresContexto << ErrorDeTipo::new(self.class, @expression1, @expression2)
     end
     @type = Bool
+    @line = @expressions1.line
+    @column = @expressions1.column
   end
 end
 
@@ -142,7 +166,9 @@ def check(tabla)
       $ErroresContexto << ErrorDeTipoUnario::new(self.class, @expression)
     end
     @type = Bool
-  end
+    @line = @expressions1.line
+    @column = @expressions1.column
+    end
 end
 
 class Uminus
@@ -152,161 +178,138 @@ def check(tabla)
       $ErroresContexto << ErrorDeTipoUnario::new(self.class, @expression)
     end
     @type = @expression.type
+    @line = @expressions.line
+    @column = @expressions.column
+    if @type = MatrixExpression then
+      @row = @expression.row
+      @col = @expression.col
+    end
   end
 end
 
 class Transpose
 def check(tabla)
     @expression.check(tabla)
-    unless @expression.type.equal? MatrixExpression
+    unless @expression.type == MatrixExpression
       $ErroresContexto << ErrorDeTipoUnario::new(self.class, @expression)
     end
     @type = MatrixExpression
+    @line = @expressions.line
+    @column = @expressions.column
+    if @type = MatrixExpression then
+      @row = @expression.row
+      @col = @expression.col
+    end
   end
 end
 
 class MatrixEval
   def check(tabla)
-    identifier = tabla.find(@expression1.t)
-    
-    if identifier.nil? then
-      @type = Error
-      $ErroresContexto << NoDeclarada::new(@identifier)
-      return
-    end    
-    unless identifier.type.eql? MatrixExpression  then
-      @type = Error
-      $ErroresContexto << ErrorDeTipo::new(@identifier)
-      return
-    end
-    
-    if (/^\d+$/.match(@expression2).nil?) then
-      $ErroresContexto << ErrorMatrixMalLlamada::new(@expression1)
-      return
-    end    
-    unless (0 <= @expression2.to_i <= identifier.row) then
-      $ErroresContexto << ErrorMatrixMalLlamada::new(@expression1)
-      return
-    end
-    
-    case @expression3  
-    when nil
-      unless (identifier.col.nil?) then
-        $ErroresContexto << ErrorMatrixMalLlamada::new(@expression1) 
-	return
-      end
-    when Digit
-      if (/^\d+$/.match(@expression3).nil?) then
-        $ErroresContexto << ErrorMatrixMalLlamada::new(@expression1)
-	return
-      end    
-      unless (0 <= @expression3.to_i <= identifier.row) then
-	$ErroresContexto << ErrorMatrixMalLlamada::new(@expression1)
-	return
-      end
-    else
-      $ErroresContexto << ErrorMatrixMalLlamada::new(@expression1)
-      return     
+    @expression1.check(tabla)
+    @expression2.check(tabla)
+    @expression3.check(tabla)
     @type = Digit
+    @line = @expression1.line
+    @column = @expression1.column
+    
+    unless @expression1.type == MatrixExpression then
+      $ErroresContexto << ErrorDeTipoUnario::new(@expression1, MatrixExpression)
+    end
+    
+    unless @expression2.type == Digit then
+      $ErroresContexto << ErrorDeTipoUnario::new(@expression2, Digit)
+    end
+    
+    unless @expression3.nil? or @expression3.type == Digit then
+      $ErroresContexto << ErrorDeTipoUnario::new(@expression3, Digit)
+    end
   end
 end
+
+
+# Instruccciones
 
 class Conditional
   def check(tabla)
     @expression.check(tabla)
-    unless @expression.type.eql? Bool then
-      $ErroresContexto << ErrorCondicional::new(@expression)
+    unless @expression.type == Bool then
+      $ErroresContexto << ErrorDeTipoUnario::new(@expression, Bool)
     end
-    @instructions1.check(tabla)
-    unless @instructions2.nil? then
-      @instructions1.check(tabla)
-    end
+    @instructions1.each.check(tabla)
+    @instructions2.each.check(tabla) unless @instructions2.nil?
   end
 end
 
 class While
   def check(tabla)
     @expression.check(tabla)
-    unless @expression.type.eql? Bool then
-      $ErroresContexto << ErrorCondicional::new(@expression)
+    unless @expression.type == Bool then
+      $ErroresContexto << ErrorDeTipoUnario::new(@expression, Bool)
     end
-    @instructions.check(tabla)
-    end
+    @instructions.each.check(tabla)
   end
 end
 
 class For
   def check(tabla)
-    identifier = tabla.find(@expression1.t)
-    if identifier.nil? then
-      @type = Error
-      $ErroresContexto << NoDeclarada::new(@identifier)
-      return
-    end 
+    identifier = tabla.find(@identifier.t)
+    $ErroresContexto << NoDeclarada::new(@identifier) if identifier.nil?
+    unless identifier.nil? or identifier[:tipo] == Digit then
+      $ErroresContexto << ErrorDeTipoUnario::new(identifier[:token], Digit)
+    end
     @expression.check(tabla)
-    unless @expression.type.eql? MatrixExpression then
-      $ErroresContexto << ErrorFor::new(@expression)
-      return
+    unless @expression.type == MatrixExpression then
+      $ErroresContexto << ErrorDeTipoUnario::new(@expression, MatrixExpression)
     end
-    @instructions.check(tabla)
-    end
+    @instructions.each.check(tabla)
   end
 end
 
 class Read
   def check(tabla)
-    ident = tabla.find(@identifier.t)
-    if identifier.nil? then
-      @type = Error
-      $ErroresContexto << NoDeclarada::new(@identifier)
-      return
+    identifier = tabla.find(@identifier.t)
+    $ErroresContexto << NoDeclarada::new(@identifier) if identifier.nil?
+    unless identifier.nil? or identifier[:tipo] == Digit or identifier[:tipo] == Bool then
+      $ErroresContexto << ErrorDeTipoUnario::new(identifier[:token], Digit)
     end
-    @expression.check(tabla)
-    
   end
 end
 
 class Set
   def check(tabla)
-    ident = tabla.find(@identifier.t)
-    if ident.nil? then
-      @type = Error
-      $ErroresContexto << NoDeclarada::new(@identifier)
-      return
-    end
+    identifier = tabla.find(@identifier.t)
+    $ErroresContexto << NoDeclarada::new(@identifier) if identifier.nil?
     @expression.check(tabla)
-    unless @expression.type.eql? ident.type then
-      $ErroresContexto << ErrorDeTipo::new(self.class,@identifier)
+    unless @expression.type == identifier[:tipo] then
+      $ErroresContexto << ErrorDeTipoUnario::new(@Expression, identifier[:tipo])
+    end
   end
 end
 
 class SetMatrix
   def check(tabla)
-    ident = tabla.find(@identifier.t)
-    if ident.nil? then
-      @type = Error
-      $ErroresContexto << NoDeclarada::new(@identifier)
-      return
+    identifier = tabla.find(@identifier.t)
+    $ErroresContexto << NoDeclarada::new(@identifier) if identifier.nil?
+    
+    unless identifier.nil? or identifier[:tipo] == MatrixExpression then
+      $ErroresContexto << ErrorDeTipoUnario::new(identifier[:token], identifier[:tipo])
     end
-    unless @expression.type.eql? MatrixExpression then
-      $ErroresContexto << ErrorFor::new(@expression)
-      return
-    end
-    if @expression2.nil? then
-      if (indent.row != 1) and (indent.col != 1) then
-	$ErroresContexto << ErrorMatrixMalLlamada::new(@expression1)
-	return
-      end
-      if /^\d+$/.match(@expression1).nil? then
-        $ErroresContexto << ErrorMatrixMalLlamada::new(@expression1)
-        return
-      end
-    else
-      if /^\d+$/.match(@expression1).nil? and /^\d+$/.match(@expression2).nil? then
-        $ErroresContexto << ErrorMatrixMalLlamada::new(@expression1)      
-      end
-    end
+    
+    @expression1.check(tabla)
+    @expression2.check(tabla) unless @expression2.nil?
     @expression3.check(tabla)
+    
+    unless @expression1.type == Digit then
+      $ErroresContexto << ErrorDeTipoUnario::new(@expression2, Digit)
+    end
+    
+    unless @expression2.nil? or @expression3.type == Digit then
+      $ErroresContexto << ErrorDeTipoUnario::new(@expression3, Digit)
+    end
+    
+    unless @expression3.type == MatrixExpression then
+      $ErroresContexto << ErrorDeTipoUnario::new(@expression3, MatrixExpression)
+    end
   end
 end
 
