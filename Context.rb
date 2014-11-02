@@ -1,20 +1,27 @@
 class Error; end
 
-class True
-  def check(tabla)
-    @type = self.class
-  end
-end
-
-class False
-  def check(tabla)
-    @type = self.class
-  end
-end
-
 class Digit
   def check(tabla)
     @type = self.class
+  end
+end
+
+class Bool
+  def check(tabla)
+    @type = self.class
+  end
+end
+
+class MatrixExpression
+  def check(tabla)
+    @expressions.each.map {|exp| exp.check(tabla)}
+    @expressions.each do |exps|
+      n = exps.length if n.nil?
+      err = exps.length != n unless err 
+    end
+    if err then
+      $ErroresContexto << ErrorMatrixMalFormada::new(@expressions.first.first)
+    end
   end
 end
 

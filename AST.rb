@@ -89,8 +89,8 @@ def create_class(father, name, attr)
     @attr.each { |a| attr_accessor a }
     
     def initialize(*attr)
-      @attr_value = [self.class.attr, attr].transpose
-      @attr_value.each do |n, v|
+      attr_value = [self.class.attr, attr].transpose
+      attr_value.each do |n, v|
         self.call(n + '=', v)
       end
     end
