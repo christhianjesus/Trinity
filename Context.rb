@@ -18,8 +18,8 @@ end
 
 class Identifier
   def check(tabla)
-    identifier = tabla.find(@identifier)
-    if identifier.nil? then
+    variable = tabla.find(@attr_value[0][1].text)
+    if variable.nil? then
       @type = TipoError
       $ErroresContexto << NoDeclarada::new(@line,
                                            @column,
@@ -31,19 +31,29 @@ class Identifier
 end
 
 
-
 class Additive
   def check(tabla)
     @expression1.check(tabla)
     @expression2.check(tabla)
-    unless @expression1.class.eql? @expression2.class and 
-      (@expression1.class.eql? Digit or @expression1.class.eql? MatrixExpression) then
-      $ErroresContexto << ErrorDeTipo::new(@line,
-                                           @column,
+    unless @expression1.type.eql? @expression2.type and 
+      (@expression1.type.eql? Digit or @expression1.type.eql? MatrixExpression) then
+      $ErroresContexto << ErrorDeTipo::new(
                                            'SUMA',
-                                           @attr_value[0][1].type.name_tk,
-                                           @attr_value[1][1].type.name_tk)
+                                           @expression1,
+                                           @expression2)
     end
+    if @expression1.type.eql MatrixExpression then
+      unless @expression1.row.eql @expression2.row and @expression1.col.eql @expression2.col
+	$ErroresContexto << ErrorDeTamanioMatrices::new(
+							'SUMA',
+							 @expression1,
+							 @expression2)
     @type = @expression1.class
   end
 end
+
+class Multiplication
+  def check(tabla)
+    @expression1.check(tabla)
+    @expression2.check(tabla)
+    
