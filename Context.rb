@@ -1,5 +1,13 @@
 class Error; end
 
+def checkInstructions(instructions, tabla)
+  if !instructions.empty?
+    for instruc in instructions 
+      instruc.check(tabla)
+    end
+  end
+end
+  
 class Bool
   def check(tabla)
     @type = self.class
@@ -209,9 +217,9 @@ class Conditional
     unless @expression.type.eql? Bool then
       $ErroresContexto << ErrorCondicional::new(@expression)
     end
-    @instructions1.check(tabla)
+    checkInstructions(@instructions1,tabla)
     unless @instructions2.nil? then
-      @instructions1.check(tabla)
+      checkInstructions(@instructions2,tabla)
     end
   end
 end
@@ -222,7 +230,7 @@ class While
     unless @expression.type.eql? Bool then
       $ErroresContexto << ErrorCondicional::new(@expression)
     end
-    @instructions.check(tabla)
+    checkInstructions(@instructions, tabla)
     end
   end
 end
@@ -240,7 +248,7 @@ class For
       $ErroresContexto << ErrorFor::new(@expression)
       return
     end
-    @instructions.check(tabla)
+    checkInstructions(@instructions, instructions)
     end
   end
 end
@@ -302,3 +310,43 @@ class SetMatrix
   end
 end
 
+class Print
+  def check(tabla)
+    for expr in @printers do
+      if expr.type.eql?  Identifier
+	ident = tabla.find(expr.t)
+	if ident.nil? then
+	  @type = Error
+	  $ErroresContexto << NoDeclarada::new(@identifier)
+	  return
+	end
+      else
+	unless expr.class.eql? TkString then
+	  expr.check(tabla)
+	end
+      end
+    end
+  end
+end
+    
+class Block
+  def check(tabla)
+    
+    if !@definitions.empty?
+      for definition in @definitions
+        tabla.insert(definition.identifier, definition.type)
+      end
+      rescue RedefineError => r
+      $ErroresContexto << r
+    end
+    checkInstructions(@instructions, tabla)
+  end
+end
+
+class Program
+  tabla = SymTable::new(nil)
+  
+  checkInstructions(@instructions, tabla)
+  
+      
+      
