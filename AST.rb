@@ -67,7 +67,7 @@ $as_tree = [
                              ['MatrixExpression', %w[expressions], []],                             
                              ['Digit', %w[digit], []],
                              ['Identifier', %w[identifier], []],
-                             ['Bool', %w[], [                  
+                             ['Bool', %w[elem], [                  
                                  ['True', %w[], []],
                                  ['False', %w[], []],
                              ]],                  
