@@ -1,10 +1,4 @@
-class True
-  def check(tabla)
-    @type = self.class
-  end
-end
-
-class False
+class Bool
   def check(tabla)
     @type = self.class
   end
@@ -16,16 +10,27 @@ class Digit
   end
 end
 
+class MatrixExpression
+  def check(tabla)
+    @expressions.each.map {|exp| exp.check(tabla)}
+    @expressions.each do |exps|
+      n = exps.length if n.nil?
+      err = exps.length != n unless err 
+    end
+    if err then
+      $ErroresContexto << ErrorMatrixMalFormada::new(@expressions.first.first)
+    end
+  end
+end
+
 class Identifier
   def check(tabla)
-    variable = tabla.find(@attr_value[0][1].text)
-    if variable.nil? then
-      @type = TipoError
-      $ErroresContexto << NoDeclarada::new(@line,
-                                           @column,
-                                           @attr_value[0][1].text)
+    identifier = tabla.find(@identifier.t)
+    if identifier.nil? then
+      @type = Error
+      $ErroresContexto << NoDeclarada::new(@identifier)
     else
-      @type = variable[:tipo]
+      @type = identifier[:tipo]
     end
   end
 end
@@ -45,13 +50,13 @@ class Additive
     end
     if @expression1.type.eql MatrixExpression then
       unless @expression1.row.eql @expression2.row and @expression1.col.eql @expression2.col
-	$ErroresContexto << ErrorDeTamanioMatrices::new(@line,
+        $ErroresContexto << ErrorDeTamanioMatrices::new(@line,
                                                         @column,
-							'SUM',
-							 @expression1,
-			                                 @expression2)
+                                                        'SUM',
+                                                        @expression1,
+                                                        @expression2)
       end
-    end						 
+    end            
     @type = @expression1.type
   end
 end
@@ -71,10 +76,10 @@ class Multiplication
     end
     if @expression1.type.eql MatrixExpression then
       unless @expression1.col.eql @expression2.row
-	$ErroresContexto << ErrorDeTamanioMatrices::new(@line,
+        $ErroresContexto << ErrorDeTamanioMatrices::new(@line,
                                                         @column,
-							'MULTIPLICATION',
-							@expression1,
+                                                        'MULTIPLICATION',
+                                                        @expression1,
                                                         @expression2)
       end
      end 
