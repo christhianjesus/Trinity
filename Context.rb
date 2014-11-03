@@ -366,4 +366,6 @@ end
 
 class Function
   def check(table)
+    
+  end
 end
