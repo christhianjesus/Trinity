@@ -1,3 +1,7 @@
+require_relative 'AST'
+require_relative 'ContextError'
+require_relative 'SymTable'
+
 class Error; end
 
 class Bool
@@ -333,23 +337,21 @@ class Print
 end
     
 class Block
-  def check(tabla)
-    
-    if !@definitions.empty?
-      for definition in @definitions
-        tabla.insert(definition.identifier, definition.type)
-      end
-      rescue RedefineError => r
-      $ErroresContexto << r
-    end
-    checkInstructions(@instructions, tabla)
+  def check(tabla)  
+    @definitions.each.check(tabla)
+    @instructions.each.check(tabla)
+  end
+end
+
+class Definition
+  def check
+    tabla.insert(definition.identifier, definition.type) 
   end
 end
 
 class Program
-  tabla = SymTable::new(nil)
-  
-  checkInstructions(@instructions, tabla)
-  
+  tabla = SymTable::new(nil) 
+  @instructions.each.check(tabla)
+end 
       
       
