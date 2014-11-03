@@ -103,8 +103,8 @@ rule
       Parameter: Type 'identifier'                          { result = Parameter::new(val[0], val[1])}
       ;
       
-      Type: 'number'                                        { result = Number::new()}
-          | 'boolean'                                       { result = Boolean::new()}
+      Type: 'number'                                        { result = Number::new([])}
+          | 'boolean'                                       { result = Boolean::new([])}
           | 'row' '(' 'digit' ')'                           { result = Matrix::new(val[2],[])}     # REVISAR
           | 'col' '(' 'digit' ')'                           { result = Matrix::new([],val[2])}     # REVISAR
           | 'matrix' '(' 'digit' ',' 'digit' ')'            { result = Matrix::new(val[2],val[4])}     # REVISAR
@@ -169,16 +169,16 @@ rule
                 | Expression '&' Expression 		{ result = And::new(val[0], val[2])}
                 | Expression '|' Expression 		{ result = Or::new(val[0], val[2])}
                 | 'not' Expression                      { result = Not::new(val[1])}
-                | '-'   Expression = UMINUS             { result = Uminus::new(Digit::new(val[1]))}
+                | '-'   Expression = UMINUS             { result = Uminus::new(val[1])}
                 | Expression '\'' 		        { result = Transpose::new(val[0])}
                 | '(' Expression ')'                    { result = val[1]}
                 | Expression '[' Expression                ']'   { result = MatrixEval::new(val[0],val[2],[])}                                                 
                 | Expression '[' Expression ',' Expression ']'   { result = MatrixEval::new(val[0],val[2],[4])}
                 | '{' MatrixExpression '}'                       { result = MatrixExpression::new(val[1])}
-                | 'digit'            	                         { result = Digit::new(val[0])}
+                | 'digit'            	                         { result = Number::new(val[0])}
                 | 'identifier' 	                                 { result = Identifier::new(val[0])}
-                | 'true'                                         { result = True::new(val[0])}
-                | 'false'                                        { result = False::new(val[0])}
+                | 'true'                                         { result = Boolean::new(val[0])}
+                | 'false'                                        { result = Boolean::new(val[0])}
                 | 'identifier' '(' Expressions ')'               { result = Invoke::new(val[0],val[2])}
                 | 'identifier' '('             ')'               { result = Invoke::new(val[0],[])}
                 
