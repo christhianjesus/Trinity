@@ -6,9 +6,9 @@ $as_tree = [
                          ['Function',   %w[indentifier parameters type instructions], []],
                          ['Parameter',  %w[type identifier], []],
                          ['Type',        %w[], [
-                             ['Boolean',        %w[             ], []],
-                             ['Number',         %w[             ], []],
-                             ['Matrix',         %w[digit1 digit2], []]
+                             ['Boolean',        %w[bool], []],
+                             ['Number',         %w[number], []],
+                             ['Matrix',         %w[row col], []]
                              ]],
                          ['Definition',  %w[type identifier expression], []],
                          ['Instruction', %w[], [
@@ -94,7 +94,7 @@ def create_class(father, name, attr)
     def initialize(*attr)
       attr_value = [self.class.attr, attr].transpose
       attr_value.each do |n, v|
-        self.call(n + '=', v)
+        self.send(n + '=', v)
       end
     end
   end

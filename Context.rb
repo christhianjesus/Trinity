@@ -62,7 +62,7 @@ class Additive
       $ErroresContexto << ErrorDeTipo::new(self.class, @expression1, @expression2)
     end
     unless @expression1.row == @expression2.row and @expression1.col == @expression2.col
-      $ErroresContexto << ErrorDeTamanioMatrices::new(@expression1, self.class)
+      $ErroresContexto << ErrorDeTamanioMatrices::new(self.class,@expression1)
     end if @expression1.type == MatrixExpression and @expression2.type == MatrixExpression
     @type = @expression1.type
     @line = @expressions1.line
@@ -83,7 +83,7 @@ class Multiplication
       $ErroresContexto << ErrorDeTipo::new(self.class, @expression1, @expression2)
     end
     unless @expression1.col == @expression2.row
-        $ErroresContexto << ErrorDeTamanioMatrices::new(@expression1, self.class)
+        $ErroresContexto << ErrorDeTamanioMatrices::new(self.class, @expression1)
     end if @expression1.type == MatrixExpression and @expression2.type == MatrixExpression
     @type = @expression1.type
     @line = @expressions1.line
@@ -319,39 +319,47 @@ end
 
 class Print
   def check(tabla)
-    for expr in @printers do
-      if expr.type.eql?  Identifier
-	ident = tabla.find(expr.t)
-	if ident.nil? then
-	  @type = Error
-	  $ErroresContexto << NoDeclarada::new(@identifier)
-	  return
-	end
-      else
-	unless expr.class.eql? TkString then
-	  expr.check(tabla)
-	end
-      end
-    end
+    @printers.each.check(tabla)
   end
 end
     
 class Block
-  def check(tabla)  
-    @definitions.each.check(tabla)
-    @instructions.each.check(tabla)
+  def check(tabla)
+    newTabla = SymbolicTable::new(tabla)
+    tabla.hijos << newTabla
+    @definitions.each.check(newTabla)
+    @instructions.each.check(newTabla)
   end
 end
 
 class Definition
-  def check
-    tabla.insert(definition.identifier, definition.type) 
+  def check(table)
+    unless @expression.nil? then
+      @expression.check(table)
+      result = case @type.class
+        when Number then Digit
+        when Boolean then Bool
+        when Matrix then MatrixExpression
+      end
+      unless @expression.type == result then
+        $ErroresContexto << ErrorDeTipoAsignacion::new(@identifier, @type, @expression.type)
+      end
+    end
+    if result == MatrixExpression then
+      result.row = @type.row
+      result.col = @type.col
+    end
+    tabla.insert(@identifier, result) 
   end
 end
 
 class Program
-  tabla = SymTable::new(nil) 
-  @instructions.each.check(tabla)
+  def check()
+    tabla = SymTable::new(nil)
+    @instructions.each.check(tabla)
+  end;
 end 
-      
-      
+
+class Function
+  def check(table)
+end

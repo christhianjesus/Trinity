@@ -128,7 +128,7 @@ rule
 			      ;
 
       Definitions: Definitions Definition ';' 	{ result = val[0] + [val[1]]}
-                 |             Definition ';'   { result = [val[0]]}
+                 |                              { result = []}
                  ;
       
       Definition: Type 'identifier'                { result = Definition::new(val[0],val[1],[])}
@@ -170,7 +170,7 @@ rule
                 | Expression '|' Expression 		{ result = Or::new(val[0], val[2])}
                 | 'not' Expression                      { result = Not::new(val[1])}
                 | '-'   Expression = UMINUS             { result = Uminus::new(Digit::new(val[1]))}
-                | Expression '\'' 		        { result = Traspose::new(val[0])}
+                | Expression '\'' 		        { result = Transpose::new(val[0])}
                 | '(' Expression ')'                    { result = val[1]}
                 | Expression '[' Expression                ']'   { result = MatrixEval::new(val[0],val[2],[])}                                                 
                 | Expression '[' Expression ',' Expression ']'   { result = MatrixEval::new(val[0],val[2],[4])}

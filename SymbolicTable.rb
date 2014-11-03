@@ -23,8 +23,8 @@ class DeleteError < SymTableError
   end
 end
 
-class SymTable
-
+class SymbolicTable
+  attr_accessor :hijos
   def initialize(padre = nil)
     @padre = padre
     @hijos = []
@@ -48,7 +48,6 @@ class SymTable
   end
 
   def isMember?(tokent)
-    return @table.has_key?(tokent) if @padre.nil?
-    return (@table.has_key?(tokent) or @padre.isMember?(tokent))
+    return @table.has_key?(tokent)
   end
 end
