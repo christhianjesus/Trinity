@@ -3,8 +3,12 @@ require_relative 'ContextError'
 require_relative 'SymTable'
 
 class Error; end
+class AST
+  attr_accessor :type
+end
 
-class Bool
+
+class Bool < AST
   def check(tabla)
     @type = self.class
     @line = @elem.l
@@ -12,7 +16,7 @@ class Bool
   end
 end
 
-class Digit
+class Digit < AST
   def check(tabla)
     @type = self.class
     @line = @digit.l
@@ -20,7 +24,7 @@ class Digit
   end
 end
 
-class Identifier
+class Identifier < AST
   def check(tabla)
     identifier = tabla.find(@identifier.t)
     if identifier.nil? then
@@ -34,7 +38,7 @@ class Identifier
   end
 end
 
-class MatrixExpression
+class MatrixExpression < AST
   def check(tabla)
     @expressions.each do |exps|
       n = exps.length if n.nil?
@@ -53,7 +57,7 @@ class MatrixExpression
   end
 end
 
-class Additive
+class Additive < AST
   def check(tabla)
     @expression1.check(tabla)
     @expression2.check(tabla)
@@ -74,7 +78,7 @@ class Additive
   end
 end
 
-class Multiplication
+class Multiplication < AST
   def check(tabla)
     @expression1.check(tabla)
     @expression2.check(tabla)
@@ -95,7 +99,7 @@ class Multiplication
   end
 end
 
-class Divisible
+class Divisible < AST
   def check(tabla)
     @expression1.check(tabla)
     @expression2.check(tabla)
@@ -108,7 +112,7 @@ class Divisible
   end
 end
 
-class ArithmeticCross
+class ArithmeticCross < AST
   def check(tabla)
     @expression1.check(tabla)
     @expression2.check(tabla)
@@ -124,7 +128,7 @@ class ArithmeticCross
   end
 end
 
-class Logical
+class Logical < AST
   def check(tabla)
     @expression1.check(tabla)
     @expression2.check(tabla)
@@ -137,7 +141,7 @@ class Logical
   end
 end
 
-class Comparison
+class Comparison < AST
   def check(tabla)
     @expression1.check(tabla)
     @expression2.check(tabla)
@@ -150,7 +154,7 @@ class Comparison
   end
 end
 
-class Equality
+class Equality < AST
   def check(tabla)
     @expression1.check(tabla)
     @expression2.check(tabla)
@@ -163,8 +167,8 @@ class Equality
   end
 end
 
-class Not
-def check(tabla)
+class Not < AST
+def check(tabla) 
     @expression.check(tabla)
     unless @expression.type == Bool
       $ErroresContexto << ErrorDeTipoUnario::new(self.class, @expression)
@@ -175,7 +179,7 @@ def check(tabla)
     end
 end
 
-class Uminus
+class Uminus < AST
 def check(tabla)
     @expression.check(tabla)
     unless @expression.type == Digit or @expression.type == MatrixExpression  
@@ -191,7 +195,7 @@ def check(tabla)
   end
 end
 
-class Transpose
+class Transpose < AST
 def check(tabla)
     @expression.check(tabla)
     unless @expression.type == MatrixExpression
@@ -207,7 +211,7 @@ def check(tabla)
   end
 end
 
-class MatrixEval
+class MatrixEval < AST
   def check(tabla)
     @expression1.check(tabla)
     @expression2.check(tabla)
