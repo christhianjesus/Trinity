@@ -17,7 +17,16 @@ def main
   end
   
   begin 
-    lexer = Parser::new.parse(Lexer::new(File::read(filename))) #lectura de archivo
+    parser = Parser::new.parse(Lexer::new(File::read(filename))) #lectura de archivo
+    
+    $ErroresContexto = []
+    parser.check # Chequeo de contexto del arbol
+    unless $ErroresContexto.empty? then
+      #to_s_recursive(parser," ") #Impresion del AST
+      for e in $ErroresContexto
+        puts e #Impresion de los errores de contexto
+      end
+    end
   rescue ParseError => e
     puts e
     exit -1
