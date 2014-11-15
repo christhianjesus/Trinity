@@ -174,7 +174,7 @@ rule
                 | Expression '\'' 		        { result = Transpose::new(val[0])}
                 | '(' Expression ')'                    { result = val[1]}
                 | Expression '[' Expression                ']'   { result = MatrixEval::new(val[0],val[2],[])}                                                 
-                | Expression '[' Expression ',' Expression ']'   { result = MatrixEval::new(val[0],val[2],[4])}
+                | Expression '[' Expression ',' Expression ']'   { result = MatrixEval::new(val[0],val[2],val[4])}
                 | '{' MatrixExpression '}'                       { result = MatrixExpression::new(val[1])}
                 | 'digit'            	                         { result = Number::new(val[0])}
                 | 'identifier' 	                                 { result = Identifier::new(val[0])}

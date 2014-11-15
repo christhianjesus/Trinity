@@ -220,7 +220,7 @@ class MatrixEval
   def check(tabla)
     @expression1.check(tabla)
     @expression2.check(tabla)
-    @expression3.check(tabla)
+    @expression3.check(tabla) unless  @expression3 == []
     @type = Number::new([])
     @line = @expression1.line
     @column = @expression1.column
@@ -233,7 +233,7 @@ class MatrixEval
       $ErroresContexto << ErrorDeTipoUnario::new(@expression2, Number)
     end
     
-    unless @expression3.nil? or @expression3.type.class == Number then
+    unless @expression3 == [] or @expression3.type.class == Number then
       $ErroresContexto << ErrorDeTipoUnario::new(@expression3, Number)
     end
   end
@@ -276,11 +276,6 @@ end
 
 class For
   def check(tabla)
-    identifier = tabla.find(@identifier.t)
-    $ErroresContexto << NoDeclarada::new(@identifier) if identifier.nil?
-    unless identifier.nil? or identifier[:tipo].class == Number then
-      $ErroresContexto << ErrorDeTipoUnario::new(identifier[:token], Number)
-    end
     @expression.check(tabla)
     unless @expression.type.class == Matrix then
       $ErroresContexto << ErrorDeTipoUnario::new(@expression, Matrix)
@@ -320,19 +315,19 @@ class SetMatrix
     end
     
     @expression1.check(tabla)
-    @expression2.check(tabla) unless @expression2.nil?
+    @expression2.check(tabla) unless @expression2 == []
     @expression3.check(tabla)
     
     unless @expression1.type.class == Number then
-      $ErroresContexto << ErrorDeTipoUnario::new(@expression2, Number)
+      $ErroresContexto << ErrorDeTipoUnario::new( Number, @expression2)
     end
     
-    unless @expression2.nil? or @expression3.type.class == Number then
-      $ErroresContexto << ErrorDeTipoUnario::new(@expression3, Number)
+    unless @expression2 == [] or @expression3.type.class == Number then
+      $ErroresContexto << ErrorDeTipoUnario::new( Number, @expression3)
     end
     
-    unless @expression3.type.class == Matrix then
-      $ErroresContexto << ErrorDeTipoUnario::new(@expression3, Matrix)
+    unless @expression3.type.class == Number then
+      $ErroresContexto << ErrorDeTipoUnario::new(Number, @expression3)
     end
   end
 end
@@ -341,7 +336,7 @@ end
 
 class Print
   def check(tabla)
-    @printers.map {|x| x.check(tabla) }
+    @printers.map {|x| x.check(tabla) unless x.class == TkString}
   end
 end
     
@@ -357,7 +352,7 @@ end
 class Definition
   def check(table)
     table.insert(@identifier, @type) 
-    unless @expression.empty? then
+    unless @expression == [] then
       @expression.check(table)
       unless @expression.type == @type then
         $ErroresContexto << ErrorDeTipoAsignacion::new(@identifier, @type, @expression.type)
