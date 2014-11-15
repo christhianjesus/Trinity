@@ -124,7 +124,8 @@ rule
 			      | 'set'   'identifier' '=' Expression                                   { result = Set::new(val[1],val[3])}
 			      | 'set'   'identifier' '[' Expression ']' '=' Expression                { result = SetMatrix::new(val[1],val[3],[],val[6])}
 		          | 'set'   'identifier' '[' Expression ',' Expression ']' '=' Expression { result = SetMatrix::new(val[1],val[3],val[5],val[8])}
-			      | Expression                                                            { result = val[0]} 
+			      | Expression                                                            { result = val[0]}
+                              | 'return' Expression            { result = val[0]}
 			      ;
 
       Definitions: Definitions Definition ';' 	{ result = val[0] + [val[1]]}
@@ -190,7 +191,7 @@ rule
   
 ---- header ----
 
-require_relative 'AST'
+require_relative 'Context'
 require_relative 'Lexer'
 
 class SyntacticError < RuntimeError

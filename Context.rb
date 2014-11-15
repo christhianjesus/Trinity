@@ -1,6 +1,7 @@
+
 require_relative 'AST'
 require_relative 'ContextError'
-require_relative 'SymTable'
+require_relative 'SymbolicTable'
 
 class Error; end
 
@@ -10,7 +11,7 @@ class Boolean
   def check(tabla)
     @line = @bool.l
     @column = @bool.c
-    @type = self
+    @type = Boolean::new(@bool)
   end
 end
 
@@ -19,7 +20,7 @@ class Number
   def check(tabla)
     @line = @number.l
     @column = @number.c
-    @type = self
+    @type = Number::new(@number)
   end
 end
 
@@ -41,16 +42,18 @@ end
 class MatrixExpression
   attr_accessor :type, :line, :column
   def check(tabla)
+    err = false
+    n= nil
     @expressions.each do |exps|
       n = exps.length if n.nil?
       if err.nil? or !err then
         err = exps.length != n
         $ErroresContexto << ErrorMatrixMalFormada::new(@expressions.first.first) if err # PODRIA DAR ERROR
       end
+      exps.map {|exp| exp.check(tabla); $ErroresContexto << ErrorDeTipoUnario::new(exp, Number) unless exp.type.class == Number}
     end
-    @expressions.each.map {|exp| exp.check(tabla); $ErroresContexto << ErrorDeTipoUnario::new(exp, Number) unless exp.type.class == Number}
     row = @expressions.length
-    col = @expressions.first.lengt 
+    col = @expressions.first.length 
     @type = Matrix::new(row, col)
 
     @line = @expressions.first.first.line
@@ -71,8 +74,8 @@ class Additive
       $ErroresContexto << ErrorDeTamanioMatrices::new(self.class, @expression1)
     end if @expression1.type.class == Matrix and @expression2.type.class == Matrix
     @type = @expression1.type #Cambiar 4ta
-    @line = @expressions1.line
-    @column = @expressions1.column
+    @line = @expression1.line
+    @column = @expression1.column
   end
 end
 
@@ -93,8 +96,8 @@ class Multiplication
     else
       @type = @expression1.type
     end
-    @line = @expressions1.line
-    @column = @expressions1.column
+    @line = @expression1.line
+    @column = @expression1.column
   end
 end
 
@@ -107,8 +110,8 @@ class Divisible
       $ErroresContexto << ErrorDeTipo::new(self.class, @expression1, @expression2)
     end
     @type = @expression1.type
-    @line = @expressions1.line
-    @column = @expressions1.column
+    @line = @expression1.line
+    @column = @expression1.column
   end
 end
 
@@ -126,8 +129,8 @@ class ArithmeticCross
     else
       @type = @expression2.type
     end
-    @line = @expressions1.line
-    @column = @expressions1.column
+    @line = @expression1.line
+    @column = @expression1.column
   end
 end
 
@@ -139,9 +142,9 @@ class Logical
     unless @expression1.type.class == Boolean and @expression2.type.class == Boolean 
       $ErroresContexto << ErrorDeTipo::new(self.class, @expression1, @expression2)
     end
-    @type = @expression1.type
-    @line = @expressions1.line
-    @column = @expressions1.column
+    @type = Boolean::new([])
+    @line = @expression1.line
+    @column = @expression1.column
   end
 end
 
@@ -153,9 +156,9 @@ class Comparison
     unless @expression1.type.class == Number and @expression2.type.class == Number    
       $ErroresContexto << ErrorDeTipo::new(self.class, @expression1, @expression2)
     end
-    @type = @expression1.type
-    @line = @expressions1.line
-    @column = @expressions1.column
+    @type = Boolean::new([])
+    @line = @expression1.line
+    @column = @expression1.column
   end
 end
 
@@ -167,9 +170,9 @@ class Equality
     unless @expression1.type.class == @expression2.type.class    
       $ErroresContexto << ErrorDeTipo::new(self.class, @expression1, @expression2)
     end
-    @type = @expression1.type
-    @line = @expressions1.line
-    @column = @expressions1.column
+    @type = Boolean::new([])
+    @line = @expression1.line
+    @column = @expression1.column
   end
 end
 
@@ -180,9 +183,9 @@ class Not
     unless @expression.type.class == Boolean
       $ErroresContexto << ErrorDeTipoUnario::new(self.class, @expression)
     end
-    @type = @expression1.type
-    @line = @expressions1.line
-    @column = @expressions1.column
+    @type = @expression.type
+    @line = @expression.line
+    @column = @expression.column
   end
 end
 
@@ -194,8 +197,8 @@ class Uminus
       $ErroresContexto << ErrorDeTipoUnario::new(self.class, @expression)
     end
     @type = @expression.type
-    @line = @expressions.line
-    @column = @expressions.column
+    @line = @expression.line
+    @column = @expression.column
   end
 end
 
@@ -207,8 +210,8 @@ class Transpose
       $ErroresContexto << ErrorDeTipoUnario::new(self.class, @expression)
     end
     @type = Matrix::new(@expression.type.col, @expression.type.row)
-    @line = @expressions.line
-    @column = @expressions.column
+    @line = @expression.line
+    @column = @expression.column
   end
 end
 
@@ -236,6 +239,17 @@ class MatrixEval
   end
 end
 
+class Invoke
+  attr_accessor :type, :line, :column
+  def check(tabla)
+    @expressions.map {|x| x.check(tabla) } unless @expressions.nil?
+    
+    identifier = tabla.find(@identifier.t)
+    $ErroresContexto << NoDeclarada::new(@identifier) if identifier.nil?
+
+    
+  end
+end
 
 # Instruccciones
 
@@ -245,8 +259,8 @@ class Conditional
     unless @expression.type.class == Boolean then
       $ErroresContexto << ErrorDeTipoUnario::new(@expression, Boolean)
     end
-    @instructions1.each.check(tabla)
-    @instructions2.each.check(tabla) unless @instructions2.nil?
+    @instructions1.map {|x| x.check(tabla) }
+    @instructions2.map {|x| x.check(tabla) } unless @instructions2.nil?
   end
 end
 
@@ -256,7 +270,7 @@ class While
     unless @expression.type.class == Boolean then
       $ErroresContexto << ErrorDeTipoUnario::new(@expression, Boolean)
     end
-    @instructions.each.check(tabla)
+    @instructions.map {|x| x.check(tabla) }
   end
 end
 
@@ -271,7 +285,7 @@ class For
     unless @expression.type.class == Matrix then
       $ErroresContexto << ErrorDeTipoUnario::new(@expression, Matrix)
     end
-    @instructions.each.check(tabla)
+    @instructions.map {|x| x.check(tabla) }
   end
 end
 
@@ -323,9 +337,11 @@ class SetMatrix
   end
 end
 
+
+
 class Print
   def check(tabla)
-    @printers.each.check(tabla)
+    @printers.map {|x| x.check(tabla) }
   end
 end
     
@@ -333,15 +349,15 @@ class Block
   def check(tabla)
     newTabla = SymbolicTable::new(tabla)
     tabla.hijos << newTabla
-    @definitions.each.check(newTabla)
-    @instructions.each.check(newTabla)
+    @definitions.map {|x| x.check(newTabla) }
+    @instructions.map {|x| x.check(newTabla) }
   end
 end
 
 class Definition
   def check(table)
-    tabla.insert(@identifier, @type) 
-    unless @expression.nil? then
+    table.insert(@identifier, @type) 
+    unless @expression.empty? then
       @expression.check(table)
       unless @expression.type == @type then
         $ErroresContexto << ErrorDeTipoAsignacion::new(@identifier, @type, @expression.type)
@@ -353,7 +369,7 @@ end
 class Program
   def check()
     tabla = SymbolicTable::new(nil)
-    @instructions.each.check(tabla)
+    @instructions.map {|x| x.check(tabla) }
   end
 end 
 
@@ -367,8 +383,8 @@ class Function
   def check(tabla)
     tablaNew = SymbolicTable::new(nil)
     tabla.hijos << tablaNew
-    @parameters.each.check(tablaNew)
-    @instructions.each.check(tablaNew)
+    @parameters.map {|x| x.check(tablaNew) }
+    @instructions.map {|x| x.check(tablaNew) }
     tablaNew.insert(@identifier, @type)
   end
 end

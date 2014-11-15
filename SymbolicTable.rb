@@ -9,7 +9,7 @@ class RedefineError < SymTableError
   end
 
   def to_s
-    "Error en línea #{@token.l}, columna #{@token.c}: la variable '#{@token.t}' fue previamente declarada en la línea #{@token_viejo.l}, columna #{@token_viejo.co}."
+    "Error en lnea #{@token.l}, columna #{@token.c}: la variable '#{@token.t}' fue previamente declarada en la lnea #{@token_viejo.l}, columna #{@token_viejo.co}."
   end
 end
 
