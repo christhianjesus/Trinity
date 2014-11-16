@@ -5,6 +5,17 @@ require_relative 'SymbolicTable'
 
 class Error; end
 
+class Matrix
+  attr_accessor :type, :line, :column
+  def check(tabla)
+    if @row.is_a? Integer then
+      print("Integer")
+    end
+    if @row.is_a? String then
+      print("Integer")
+    end
+  end
+end     
 
 class Boolean
   attr_accessor :type, :line, :column
@@ -49,6 +60,7 @@ class MatrixExpression
       if err.nil? or !err then
         err = exps.length != n
         $ErroresContexto << ErrorMatrixMalFormada::new(@expressions.first.first) if err # PODRIA DAR ERROR
+	exit -1 if err
       end
       exps.map {|exp| exp.check(tabla); $ErroresContexto << ErrorDeTipoUnario::new(exp, Number) unless exp.type.class == Number}
     end
@@ -276,11 +288,14 @@ end
 
 class For
   def check(tabla)
+    newTabla = SymbolicTable::new(tabla)
+    tabla.hijos << newTabla
     @expression.check(tabla)
     unless @expression.type.class == Matrix then
       $ErroresContexto << ErrorDeTipoUnario::new(@expression, Matrix)
     end
-    @instructions.map {|x| x.check(tabla) }
+    newTabla.insert(@identifier, Number::new([])) 
+    @instructions.map {|x| x.check(newTabla) }
   end
 end
 
@@ -352,6 +367,7 @@ end
 class Definition
   def check(table)
     table.insert(@identifier, @type) 
+    
     unless @expression == [] then
       @expression.check(table)
       unless @expression.type == @type then

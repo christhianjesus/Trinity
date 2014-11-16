@@ -26,6 +26,7 @@ def main
       for e in $ErroresContexto
         puts e #Impresion de los errores de contexto
       end
+      exit -1
     end
   rescue ParseError => e
     puts e
