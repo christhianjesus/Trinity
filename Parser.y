@@ -92,8 +92,8 @@ rule
                |           Function ';'	                   { result =          [val[0]]}
                ;
       
-      Function: 'function' 'identifier' '(' Parameters ')' 'return' Type 'begin' Instructions 'end'	{ result = Function::new(val[1], val[3], val[6], val[8])}
-              | 'function' 'identifier' '('            ')' 'return' Type 'begin' Instructions 'end' { result = Function::new(val[1],     [], val[5], val[7])}
+      Function: 'function' 'identifier' '(' Parameters ')' 'return' Type 'begin' Instructions 'end'	{ result = Function::new(val[1], val[3], val[5], val[6], val[8])}
+              | 'function' 'identifier' '('            ')' 'return' Type 'begin' Instructions 'end' { result = Function::new(val[1],     [], val[4], val[5], val[7])}
               ;
       
       Parameters: Parameters ',' Parameter                  { result = val[0] + [val[2]]}
@@ -105,9 +105,9 @@ rule
       
       Type: 'number'                                        { result = Number::new([])}
           | 'boolean'                                       { result = Boolean::new([])}
-          | 'row' '(' 'digit' ')'                           { result = Matrix::new(val[2],[])}     # REVISAR
-          | 'col' '(' 'digit' ')'                           { result = Matrix::new([],val[2])}     # REVISAR
-          | 'matrix' '(' 'digit' ',' 'digit' ')'            { result = Matrix::new(val[2],val[4])}     # REVISAR
+          | 'row' '(' 'digit' ')'                           { result = Matrix::new([],[],val[2])}     # REVISAR
+          | 'col' '(' 'digit' ')'                           { result = Matrix::new([],val[2],[])}     # REVISAR
+          | 'matrix' '(' 'digit' ',' 'digit' ')'            { result = Matrix::new([],val[2],val[4])}     # REVISAR
           ;
       
       Instructions: Instructions  Instruction ';'           { result = val[0] + [val[1]]}
@@ -123,9 +123,9 @@ rule
 			      | 'read'  'identifier'                                                  { result = Read::new(val[1])}
 			      | 'set'   'identifier' '=' Expression                                   { result = Set::new(val[1],val[3])}
 			      | 'set'   'identifier' '[' Expression ']' '=' Expression                { result = SetMatrix::new(val[1],val[3],[],val[6])}
-		          | 'set'   'identifier' '[' Expression ',' Expression ']' '=' Expression { result = SetMatrix::new(val[1],val[3],val[5],val[8])}
+		              | 'set'   'identifier' '[' Expression ',' Expression ']' '=' Expression { result = SetMatrix::new(val[1],val[3],val[5],val[8])}
 			      | Expression                                                            { result = val[0]}
-                              | 'return' Expression            { result = val[0]}
+                              | 'return' Expression            { result = Return::new(val[1])}
 			      ;
 
       Definitions: Definitions Definition ';' 	{ result = val[0] + [val[1]]}
@@ -175,7 +175,7 @@ rule
                 | '(' Expression ')'                    { result = val[1]}
                 | Expression '[' Expression                ']'   { result = MatrixEval::new(val[0],val[2],[])}                                                 
                 | Expression '[' Expression ',' Expression ']'   { result = MatrixEval::new(val[0],val[2],val[4])}
-                | '{' MatrixExpression '}'                       { result = MatrixExpression::new(val[1])}
+                | '{' MatrixExpression '}'                       { result = Matrix::new(val[1],[],[])}
                 | 'digit'            	                         { result = Number::new(val[0])}
                 | 'identifier' 	                                 { result = Identifier::new(val[0])}
                 | 'true'                                         { result = Boolean::new(val[0])}

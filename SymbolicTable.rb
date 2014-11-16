@@ -9,7 +9,7 @@ class RedefineError < SymTableError
   end
 
   def to_s
-    "Error en lnea #{@token.l}, columna #{@token.c}: la variable '#{@token.t}' fue previamente declarada en la lnea #{@token_viejo.l}, columna #{@token_viejo.co}."
+    "Error en lnea #{@token.l}, columna #{@token.c}: la variable '#{@token.t}' fue previamente declarada en la lnea #{@token_viejo.l}, columna #{@token_viejo.c}."
   end
 end
 
@@ -34,6 +34,11 @@ class SymbolicTable
   def insert(token, tipo)
     raise RedefineError::new(token, @table[token.t][:token]) if @table.has_key?(token.t)
     @table[token.t] = { :token => token, :tipo => tipo}
+  end
+  
+  def insertF(token, tipo, parametro)
+    raise RedefineError::new(token, @table[token.t][:token]) if @table.has_key?(token.t)
+    @table[token.t] = { :token => token, :tipo => tipo, :parametro => parametro}
   end
 
   def delete(tokent)

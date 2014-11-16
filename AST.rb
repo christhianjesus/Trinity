@@ -3,12 +3,12 @@
 $as_tree = [
             ['AST', [], [
                          ['Program',    %w[functions instructions], []],
-                         ['Function',   %w[indentifier parameters type instructions], []],
+                         ['Function',   %w[identifier parameters return type instructions], []],
                          ['Parameter',  %w[type identifier], []],
                          ['Type',        %w[], [
                              ['Boolean',        %w[bool], []],
                              ['Number',         %w[number], []],
-                             ['Matrix',         %w[row col], []]
+                             ['Matrix',         %w[exps row col], []]
                              ]],
                          ['Definition',  %w[type identifier expression], []],
                          ['Instruction', %w[], [
@@ -17,6 +17,7 @@ $as_tree = [
                              ['For',            %w[identifier expression instructions], []],
                              ['While',          %w[expression instructions], []],
                              ['Print',          %w[printers], []],
+                             ['Return',         %w[expression], []],
                              ['Read',           %w[identifier], []],
                              ['Set',            %w[identifier expression], []],
                              ['SetMatrix',      %w[identifier expression1 expression2 expression3], []]
@@ -64,14 +65,8 @@ $as_tree = [
                                  ['Transpose', %w[], []],
                              ]],
                              ['MatrixEval', %w[expression1 expression2 expression3], []],
-                             ['MatrixExpression', %w[expressions], []],                             
-                             ['Digit', %w[digit], []],
-                             ['Identifier', %w[identifier], []],
-                             ['Bool', %w[elem], [                  
-                                 ['True', %w[], []],
-                                 ['False', %w[], []],
-                             ]],                  
-                             ['Invoke', %w[indentifier expressions], []]
+                             ['Identifier', %w[identifier], []],                
+                             ['Invoke', %w[identifier expressions], []]
                             ]]
                  ]]
            ]

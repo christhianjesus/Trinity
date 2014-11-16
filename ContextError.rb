@@ -27,6 +27,18 @@ class NoDeclarada < ContextError
   end
 end
 
+class NumeroParamInvalidos < ContextError
+  def initialize(exp)
+    @linea = exp.l
+    @columna = exp.c
+    @nombre = exp.t
+  end
+  
+  def to_s
+    "Error cerca de la linea #{@linea} y columna #{@columna}: distinto numero de parametros en la invocacion de la funcion \"#{@nombre}\""
+  end
+end
+
 class ErrorMatrixMalFormada < ContextError
   def initialize(exp)
     @linea = exp.line
@@ -35,6 +47,17 @@ class ErrorMatrixMalFormada < ContextError
 
   def to_s
     "Error cerca de la linea #{@linea} y columna #{@columna}: Matrix mal formada."
+  end
+end
+
+class ErrorMatrixMalDefinida < ContextError
+  def initialize(token)
+    @linea = token.l
+    @columna = token.c
+  end
+
+  def to_s
+    "Error cerca de la linea #{@linea} y columna #{@columna}: Matrix mal definida."
   end
 end
 
