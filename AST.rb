@@ -8,7 +8,7 @@ $as_tree = [
                          ['Type',        %w[], [
                              ['Boolean',        %w[bool], []],
                              ['Number',         %w[number], []],
-                             ['Matrix',         %w[exps row col], []]
+                             ['Matriz',         %w[exps row col], []]
                              ]],
                          ['Definition',  %w[type identifier expression], []],
                          ['Instruction', %w[], [
@@ -20,7 +20,7 @@ $as_tree = [
                              ['Return',         %w[expression], []],
                              ['Read',           %w[identifier], []],
                              ['Set',            %w[identifier expression], []],
-                             ['SetMatrix',      %w[identifier expression1 expression2 expression3], []]
+                             ['SetMatriz',      %w[identifier expression1 expression2 expression3], []]
                              ]],
                          ['Expression', %w[], [
                              ['Binary', %w[expression1 expression2], [
@@ -64,7 +64,7 @@ $as_tree = [
                                  ['Uminus', %w[], []],
                                  ['Transpose', %w[], []],
                              ]],
-                             ['MatrixEval', %w[expression1 expression2 expression3], []],
+                             ['MatrizEval', %w[expression1 expression2 expression3], []],
                              ['Identifier', %w[identifier], []],                
                              ['Invoke', %w[identifier expressions], []]
                             ]]

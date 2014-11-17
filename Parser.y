@@ -74,7 +74,7 @@ class Parser
     'string' 'TkString'
     'return' 'TkReturn'
     'number' 'TkNumber'
-    'matrix' 'TkMatrix'
+    'matrix' 'TkMatriz'
     'program' 'TkProgram'
     'boolean' 'TkBoolean'
     'function' 'TkFunction'
@@ -105,9 +105,9 @@ rule
       
       Type: 'number'                                        { result = Number::new([])}
           | 'boolean'                                       { result = Boolean::new([])}
-          | 'row' '(' 'digit' ')'                           { result = Matrix::new([],[],val[2])}     # REVISAR
-          | 'col' '(' 'digit' ')'                           { result = Matrix::new([],val[2],[])}     # REVISAR
-          | 'matrix' '(' 'digit' ',' 'digit' ')'            { result = Matrix::new([],val[2],val[4])}     # REVISAR
+          | 'row' '(' 'digit' ')'                           { result = Matriz::new([],[],val[2])}     # REVISAR
+          | 'col' '(' 'digit' ')'                           { result = Matriz::new([],val[2],[])}     # REVISAR
+          | 'matrix' '(' 'digit' ',' 'digit' ')'            { result = Matriz::new([],val[2],val[4])}     # REVISAR
           ;
       
       Instructions: Instructions  Instruction ';'           { result = val[0] + [val[1]]}
@@ -122,8 +122,8 @@ rule
 			      | 'print' Printers                                                 { result = Print::new(val[1])}                                                  
 			      | 'read'  'identifier'                                                  { result = Read::new(val[1])}
 			      | 'set'   'identifier' '=' Expression                                   { result = Set::new(val[1],val[3])}
-			      | 'set'   'identifier' '[' Expression ']' '=' Expression                { result = SetMatrix::new(val[1],val[3],[],val[6])}
-		              | 'set'   'identifier' '[' Expression ',' Expression ']' '=' Expression { result = SetMatrix::new(val[1],val[3],val[5],val[8])}
+			      | 'set'   'identifier' '[' Expression ']' '=' Expression                { result = SetMatriz::new(val[1],val[3],[],val[6])}
+		              | 'set'   'identifier' '[' Expression ',' Expression ']' '=' Expression { result = SetMatriz::new(val[1],val[3],val[5],val[8])}
 			      | Expression                                                            { result = val[0]}
                               | 'return' Expression            { result = Return::new(val[1])}
 			      ;
@@ -138,9 +138,11 @@ rule
       
       Printers: Printers ',' Printer { result = val[0] + [val[2]]}
               | Printer              { result =          [val[0]]}
+	      ;
               
       Printer: Expression            { result = val[0]}
              | 'string'              { result = val[0]}
+	     ;
 
       Expressions: Expressions ',' Expression { result = val[0] + [val[2]]}
                  |                 Expression { result =          [val[0]]}
@@ -173,19 +175,19 @@ rule
                 | '-'   Expression = UMINUS             { result = Uminus::new(val[1])}
                 | Expression '\'' 		        { result = Transpose::new(val[0])}
                 | '(' Expression ')'                    { result = val[1]}
-                | Expression '[' Expression                ']'   { result = MatrixEval::new(val[0],val[2],[])}                                                 
-                | Expression '[' Expression ',' Expression ']'   { result = MatrixEval::new(val[0],val[2],val[4])}
-                | '{' MatrixExpression '}'                       { result = Matrix::new(val[1],[],[])}
+                | Expression '[' Expression                ']'   { result = MatrizEval::new(val[0],val[2],[])}                                                 
+                | Expression '[' Expression ',' Expression ']'   { result = MatrizEval::new(val[0],val[2],val[4])}
+                | '{' MatrizExpression '}'                       { result = Matriz::new(val[1],[],[])}
                 | 'digit'            	                         { result = Number::new(val[0])}
-                | 'identifier' 	                                 { result = Identifier::new(val[0])}
                 | 'true'                                         { result = Boolean::new(val[0])}
                 | 'false'                                        { result = Boolean::new(val[0])}
                 | 'identifier' '(' Expressions ')'               { result = Invoke::new(val[0],val[2])}
                 | 'identifier' '('             ')'               { result = Invoke::new(val[0],[])}
+                | 'identifier' 	                                 { result = Identifier::new(val[0])}
                 
                 ;
                                                         
-      MatrixExpression: MatrixExpression ':' Expressions        { result = val[0] + [val[2]]}           #REVISAR
+      MatrizExpression: MatrizExpression ':' Expressions        { result = val[0] + [val[2]]}           #REVISAR
                       | Expressions                             { result = [val[0]]}
                       ;
   
@@ -204,7 +206,7 @@ class SyntacticError < RuntimeError
     unless token
        return " Fatal exception "   
     end
-    return "Errorrrr Sintactico del Token '#{@token.t}' en la linea #{@token.l} y columna #{@token.c}."   
+    return "Error Sintactico del Token '#{@token.t}' en la linea #{@token.l} y columna #{@token.c}."   
   end
 end
 

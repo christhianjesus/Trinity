@@ -39,25 +39,25 @@ class NumeroParamInvalidos < ContextError
   end
 end
 
-class ErrorMatrixMalFormada < ContextError
+class ErrorMatrizMalFormada < ContextError
   def initialize(exp)
     @linea = exp.line
     @columna = exp.column
   end
 
   def to_s
-    "Error cerca de la linea #{@linea} y columna #{@columna}: Matrix mal formada."
+    "Error cerca de la linea #{@linea} y columna #{@columna}: Matriz mal formada."
   end
 end
 
-class ErrorMatrixMalDefinida < ContextError
+class ErrorMatrizMalDefinida < ContextError
   def initialize(token)
     @linea = token.l
     @columna = token.c
   end
 
   def to_s
-    "Error cerca de la linea #{@linea} y columna #{@columna}: Matrix mal definida."
+    "Error cerca de la linea #{@linea} y columna #{@columna}: Matriz mal definida."
   end
 end
 
@@ -87,14 +87,14 @@ class ErrorDeTamanioMatrices < ContextError
   end
 end
 
-class ErrorMatrixMalLlamada < ContextError
+class ErrorMatrizMalLlamada < ContextError
   def initialize(exp)
     @linea = exp.line
     @columna = exp.column
   end
 
   def to_s
-    "Error cerca de la linea #{@linea} y columna #{@columna}: Matrix mal formada."
+    "Error cerca de la linea #{@linea} y columna #{@columna}: Matriz mal formada."
   end
 end
 

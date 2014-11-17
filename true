@@ -1,0 +1,9 @@
+program
+  use
+    matrix(2,2) foo = {1,2:3,4};
+    number hola;
+  in
+
+    print hola, foo[2];
+  end;
+end;
