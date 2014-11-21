@@ -240,3 +240,18 @@ class Invoke
     tabla.find(@identifier.t)[:valor].exec(tabla, params)
   end
 end
+
+class For
+  def exec(tabla)
+    
+    tablaNew = ValueTable::new(tabla)
+    puts(@identifier)
+    tablaNew.insert(@identifier);
+    matriz = @expression.exec(tabla)
+    
+    matriz.each do |x|
+      tablaNew.update(@identifier, x)
+      @instructions.each{|y| y.exec(tablaNew)}
+    end
+  end
+end
