@@ -35,7 +35,7 @@ end
 class Block
   def exec(tabla)
     newTabla = ValueTable::new(tabla)
-    @definitions.each{|e| e.exec(newTabla)}  
+    @definitions.each{|e| e.exec(newTabla)}
     @instructions.each{|e| e.exec(newTabla)}
   end
 end
@@ -66,7 +66,7 @@ class Conditional
     if @expression.exec(tabla) then
       @instructions1.each{|e| e.exec(tabla)}
     else
-      @instructions2.each{|e| e.exec(tabla)} unless @instructions2 == []      
+      @instructions2.each{|e| e.exec(tabla)}   
     end
   end
 end
@@ -81,11 +81,11 @@ class While
 end
 
 
-class Set; def exec(tabla); tabla.update(@identifier.t,@expression.exec(tabla)); end; end
+class Set; def exec(tabla); tabla.update(@identifier.t, @expression.exec(tabla)); end; end
     
 class Print
   def exec(tabla)
-    @printers.map do |x|
+    @printers.each do |x|
       unless x.class == TkString then 
         print(x.exec(tabla))
       else
