@@ -43,17 +43,18 @@ end
 class Definition
   def exec(tabla)
     tabla.insert(@identifier.t)
-    result = nil
     unless @expression == [] then
       result = @expression.exec(tabla)
     else
       result = case @type.class.name
       when Number.name then
-	0
+        0
       when Boolean.name then
-	false
+        false
       when Matriz.name then
-	Matrix.zero(@type.row,@type.col)
+        Matrix.zero(@type.row,@type.col)
+      else
+        nil
       end
     end
     tabla.update(@identifier.t, result)
@@ -85,10 +86,10 @@ class Set; def exec(tabla); tabla.update(@identifier.t,@expression.exec(tabla));
 class Print
   def exec(tabla)
     @printers.map do |x|
-      unless x.class == TkString then
-	print(x.exec(tabla))
+      unless x.class == TkString then 
+        print(x.exec(tabla))
       else
-	print(x.t)
+        print(x.t)
       end
     end
   end
@@ -108,23 +109,23 @@ end
 
 class Matriz
   def exec(tabla)
-    Matrix.build(@row,@col){|row, col| @exps[row][col].exec(tabla)}
+    Matrix.build(@row, @col){|row, col| @exps[row][col].exec(tabla)}
   end
 end
 
-class Plus; def exec(tabla); (@expression1.exec(tabla) + @expression2.exec(tabla)); end; end
+class Plus;           def exec(tabla); (@expression1.exec(tabla) + @expression2.exec(tabla)); end; end
   
-class Minus; def exec(tabla); (@expression1.exec(tabla) - @expression2.exec(tabla)); end; end
+class Minus;          def exec(tabla); (@expression1.exec(tabla) - @expression2.exec(tabla)); end; end
   
 class Multiplication; def exec(tabla); (@expression1.exec(tabla) * @expression2.exec(tabla)); end; end
   
-class Division; def exec(tabla); (@expression1.exec(tabla) / @expression2.exec(tabla)); end; end
+class Division;       def exec(tabla); (@expression1.exec(tabla) / @expression2.exec(tabla)); end; end
   
-class Remain; def exec(tabla); (@expression1.exec(tabla) % @expression2.exec(tabla)); end; end
+class Remain;         def exec(tabla); (@expression1.exec(tabla) % @expression2.exec(tabla)); end; end
   
-class Div; def exec(tabla); @expression1.exec(tabla).div(@expression2.exec(tabla)); end; end
+class Div;            def exec(tabla); @expression1.exec(tabla).div(@expression2.exec(tabla)); end; end
   
-class Mod; def exec(tabla); @expression1.exec(tabla).modulo(@expression2.exec(tabla)).to_i; end; end
+class Mod;            def exec(tabla); @expression1.exec(tabla).modulo(@expression2.exec(tabla)); end; end
 
 
 class PlusCross
@@ -194,36 +195,36 @@ class ModCross
     exp1 = @expression1.exec(tabla)
     exp2 = @expression2.exec(tabla)
     if exp1.class == Matrix then
-      exp1.collect{|e| e.modulo(exp2).to_i}
+      exp1.collect{|e| e.modulo(exp2) }
     else
-      exp2.collect{|e| exp1.modulo(e).to_1 }
+      exp2.collect{|e| exp1.modulo(e) }
     end
   end
 end
   
-class Less; def exec(tabla); return (@expression1.exec(tabla) < @expression2.exec(tabla)); end; end
+class Less;         def exec(tabla); return (@expression1.exec(tabla) < @expression2.exec(tabla)); end; end
 
-class Greater; def exec(tabla); return (@expression1.exec(tabla) > @expression2.exec(tabla)); end; end
+class Greater;      def exec(tabla); return (@expression1.exec(tabla) > @expression2.exec(tabla)); end; end
   
-class LessEqual; def exec(tabla); return (@expression1.exec(tabla) <= @expression2.exec(tabla)); end; end
+class LessEqual;    def exec(tabla); return (@expression1.exec(tabla) <= @expression2.exec(tabla)); end; end
   
 class GreaterEqual; def exec(tabla); return (@expression1.exec(tabla) >= @expression2.exec(tabla)); end; end
   
-class And; def exec(tabla); return (@expression1.exec(tabla) and @expression2.exec(tabla)); end; end
+class And;          def exec(tabla); return (@expression1.exec(tabla) and @expression2.exec(tabla)); end; end
   
-class Or; def exec(tabla); return (@expression1.exec(tabla) or @expression2.exec(tabla)); end; end 
+class Or;           def exec(tabla); return (@expression1.exec(tabla) or @expression2.exec(tabla)); end; end 
     
-class Equal; def exec(tabla); (@expression1.exec(tabla) == @expression2.exec(tabla)); end; end 
+class Equal;        def exec(tabla); (@expression1.exec(tabla) == @expression2.exec(tabla)); end; end 
   
-class NotEqual; def exec(tabla); (@expression1.exec(tabla) != @expression2.exec(tabla)); end; end 
+class NotEqual;     def exec(tabla); (@expression1.exec(tabla) != @expression2.exec(tabla)); end; end 
   
-class Not; def exec(tabla); return (!@expression.exec(tabla)); end; end
+class Not;          def exec(tabla); return (!@expression.exec(tabla)); end; end
   
-class Uminus; def exec(tabla); return (-@expression.exec(tabla)); end; end  
+class Uminus;       def exec(tabla); return ((-1) * @expression.exec(tabla)); end; end  
   
-class Transpose; def exec(tabla); return (@tape.exec(tabla)).transpose; end; end
+class Transpose;    def exec(tabla); return (@tape.exec(tabla)).transpose; end; end
   
-class MatrizEval  # ERROR 
+class MatrizEval
   def exec(tabla)
     if @expression1.class == Identifier then     
       variable = @expression1.identifier.t
@@ -243,6 +244,7 @@ class MatrizEval  # ERROR
       if matriz.column(0).size == 1 then
         return matriz[exp1-1, 0]
       end
+      # Matriz sin un valor y no sea ni row ni col
     end
   end
 end
@@ -261,4 +263,17 @@ class Invoke
   end
 end
 
-  
+class For
+  def exec(tabla)
+    
+    tablaNew = ValueTable::new(tabla)
+    puts(@identifier)
+    tablaNew.insert(@identifier);
+    matriz = @expression.exec(tabla)
+    
+    matriz.each do |x|
+      tablaNew.update(@identifier, x)
+      @instructions.each{|y| y.exec(tablaNew)}
+    end
+  end
+end
