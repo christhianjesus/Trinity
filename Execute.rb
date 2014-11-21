@@ -17,7 +17,7 @@ class Function
   def exec(tabla, params)
     tablaNew = ValueTable::new(tabla)
     atributos = [@parameters, params].transpose
-    atributos.each {|x, y| tablaNew.insert(x.identifier); tablaNew.update(x.identifier, y)}
+    atributos.each {|x, y| tablaNew.insert(x.identifier.t); tablaNew.update(x.identifier.t, y)}
     @instructions.each do |x|
       v = x.exec(tablaNew)
       print(v)
@@ -243,14 +243,11 @@ end
 
 class For
   def exec(tabla)
-    
     tablaNew = ValueTable::new(tabla)
-    puts(@identifier)
-    tablaNew.insert(@identifier);
+    tablaNew.insert(@identifier.t);
     matriz = @expression.exec(tabla)
-    
     matriz.each do |x|
-      tablaNew.update(@identifier, x)
+      tablaNew.update(@identifier.t, x)
       @instructions.each{|y| y.exec(tablaNew)}
     end
   end
