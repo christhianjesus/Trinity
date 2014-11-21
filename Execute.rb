@@ -61,6 +61,28 @@ class Definition
   end
 end
 
+class Conditional
+  def exec(tabla)
+    if @expression.exec(tabla) then
+      @instructions1.each{|e| e.exec(tabla)}
+    else
+      @instructions2.each{|e| e.exec(tabla)} unless @instructions2 == []      
+    end
+  end
+end
+
+
+class While
+  def exec(tabla)
+    while @expression.exec(tabla) do
+      @instructions.each{|e| e.exec(tabla)}
+    end
+  end
+end
+
+
+class Set; def exec(tabla); tabla.update(@identifier.t,@expression.exec(tabla)); end; end
+    
 class Print
   def exec(tabla)
     @printers.map do |x|
