@@ -17,7 +17,7 @@ class Function
   def exec(tabla, params)
     tablaNew = ValueTable::new(tabla)
     atributos = [@parameters, params].transpose
-    atributos.each {|x, y| tablaNew.insert(x.identifier); tablaNew.update(x.identifier, y)}
+    atributos.each {|x, y| tablaNew.insert(x.identifier.t); tablaNew.update(x.identifier.t, y)}
     @instructions.each do |x|
       v = x.exec(tablaNew)
       print(v)
@@ -71,7 +71,6 @@ class Conditional
   end
 end
 
-
 class While
   def exec(tabla)
     while @expression.exec(tabla) do
@@ -92,6 +91,33 @@ class Print
         print(x.t)
       end
     end
+  end
+end
+
+class Read
+  def exec(tabla)
+    valor = tabla.find(@identifier.t)[:valor]
+    lectura = STDIN.gets.chomp 
+    result = case valor.class.name
+    when Fixnum.name then
+      unless /\A\-?\d+(\.\d+)?/.match(lectura) != '' then
+	Error
+      end
+      lectura.to_f
+    when TrueClass.name
+      unless (lectura =='true') or  (lectura =='false') then
+	Error
+      end
+      lectura == 'true'
+    when FalseClass.name
+      unless (lectura =='true') or  (lectura =='false') then
+	Error
+      end
+      lectura == 'true'
+    else
+      Error
+    end
+    tabla.update(@identifier.t,result)   
   end
 end
 
@@ -268,11 +294,11 @@ class For
     
     tablaNew = ValueTable::new(tabla)
     puts(@identifier)
-    tablaNew.insert(@identifier);
+    tablaNew.insert(@identifier.t);
     matriz = @expression.exec(tabla)
-    
+    print(matriz) 
     matriz.each do |x|
-      tablaNew.update(@identifier, x)
+      tablaNew.update(@identifier.t, x)
       @instructions.each{|y| y.exec(tablaNew)}
     end
   end
