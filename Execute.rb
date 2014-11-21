@@ -274,3 +274,32 @@ class For
     end
   end
 end
+
+class Set; def exec(tabla); tabla.update(@identifier.t, @expression.exec(tabla)); end; end
+
+class Matrix # Inmutable object, bye bye ;)
+  def []=(i, j, x)
+    @rows[i][j] = x
+  end
+end
+
+class SetMatriz
+  def exec(tabla)
+    matriz = tabla.find(@identifier.t)[:valor]
+    valor = @expression3.exec(tabla)
+    
+    exp1 = @expression1.exec(tabla)
+    unless @expression2 == [] then
+      exp2 = @expression2.exec(tabla)
+      matriz[exp1-1, exp2-1] = valor
+    else
+      if matriz.row_size() == 1 then
+        matriz[0, exp1-1] = valor
+      end
+      if matriz.column(0).size == 1 then
+        matriz[exp1-1, 0] = valor
+      end
+      # Matriz sin un valor y no sea ni row ni col
+    end
+  end
+end
