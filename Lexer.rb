@@ -31,7 +31,7 @@ class Lexer
     self.skip($&.length)
     return nil if @input.empty?
     
-    if $tokens.detect{|k,v| v =~ @input && @x = k}
+    if $tokens.detect{|k,v| v =~ @input; @x = k}
       self.skip($&.length)
       tknClass = Object::const_get(@x)
     else

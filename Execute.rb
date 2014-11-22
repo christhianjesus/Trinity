@@ -1,5 +1,6 @@
 require_relative 'AST'
 require_relative 'ValueTable'
+require_relative 'DynamicError'
 require 'matrix'
 
 # Redifinicion de las clases del AST con un metodo
@@ -20,7 +21,6 @@ class Function
     atributos.each {|x, y| tablaNew.insert(x.identifier.t); tablaNew.update(x.identifier.t, y)}
     @instructions.each do |x|
       v = x.exec(tablaNew)
-      print(v)
       return v if x.class == Return
     end
   end
@@ -119,14 +119,37 @@ class Minus;          def exec(tabla); (@expression1.exec(tabla) - @expression2.
   
 class Multiplication; def exec(tabla); (@expression1.exec(tabla) * @expression2.exec(tabla)); end; end
   
-class Division;       def exec(tabla); (@expression1.exec(tabla) / @expression2.exec(tabla)); end; end
+class Division
+  def exec(tabla)
+    exp2 = @expression2.exec(tabla)
+    DivisionCero::new(@expression2) if exp2 == 0
+    (@expression1.exec(tabla) / exp2)
+  end
+end
   
-class Remain;         def exec(tabla); (@expression1.exec(tabla) % @expression2.exec(tabla)); end; end
+class Remain
+  def exec(tabla)
+    exp2 = @expression2.exec(tabla)
+    DivisionCero::new(@expression2) if exp2 == 0
+    (@expression1.exec(tabla) % exp2)
+  end
+end
   
-class Div;            def exec(tabla); @expression1.exec(tabla).div(@expression2.exec(tabla)); end; end
+class Div
+  def exec(tabla)
+    exp2 = @expression2.exec(tabla)
+    DivisionCero::new(@expression2) if exp2 == 0
+    @expression1.exec(tabla).div(exp2)
+  end
+end
   
-class Mod;            def exec(tabla); @expression1.exec(tabla).modulo(@expression2.exec(tabla)); end; end
-
+class Mod
+  def exec(tabla)
+    exp2 = @expression2.exec(tabla)
+    DivisionCero::new(@expression2) if exp2 == 0
+    @expression1.exec(tabla).modulo(exp2)
+  end
+end
 
 class PlusCross
   def exec(tabla)
@@ -154,14 +177,14 @@ end
 
 class MultiplicationCross; def exec(tabla); (@expression1.exec(tabla) * @expression2.exec(tabla)); end; end
   
-class DivisionCross
+class DivisionCross # PROBAR
   def exec(tabla)
     exp1 = @expression1.exec(tabla)
     exp2 = @expression2.exec(tabla)
     if exp1.class == Matrix then
-      exp1.collect{|e| e / exp2}
+      exp1.collect{|e| DivisionCero::new(@expression2) if exp2 == 0; e / exp2}
     else
-      exp2.collect{|e| exp1 / e }
+      exp2.collect{|e| DivisionCero::new(@expression2) if e == 0; exp1 / e }
     end
   end
 end
@@ -171,9 +194,9 @@ class RemainCross;
     exp1 = @expression1.exec(tabla)
     exp2 = @expression2.exec(tabla)
     if exp1.class == Matrix then
-      exp1.collect{|e| e % exp2}
+      exp1.collect{|e| DivisionCero::new(@expression2) if exp2 == 0; e % exp2}
     else
-      exp2.collect{|e| exp1 % e }
+      exp2.collect{|e| DivisionCero::new(@expression2) if e == 0; exp1 % e }
     end
   end
 end
@@ -183,9 +206,9 @@ class DivCross;
     exp1 = @expression1.exec(tabla)
     exp2 = @expression2.exec(tabla)
     if exp1.class == Matrix then
-      exp1.collect{|e| e.div(exp2)}
+      exp1.collect{|e| DivisionCero::new(@expression2) if exp2 == 0; e.div(exp2)}
     else
-      exp2.collect{|e| exp1.div(e) }
+      exp2.collect{|e| DivisionCero::new(@expression2) if e == 0; exp1.div(e) }
     end
   end
 end
@@ -195,9 +218,9 @@ class ModCross
     exp1 = @expression1.exec(tabla)
     exp2 = @expression2.exec(tabla)
     if exp1.class == Matrix then
-      exp1.collect{|e| e.modulo(exp2) }
+      exp1.collect{|e| DivisionCero::new(@expression2) if exp2 == 0; e.modulo(exp2) }
     else
-      exp2.collect{|e| exp1.modulo(e) }
+      exp2.collect{|e| DivisionCero::new(@expression2) if e == 0; exp1.modulo(e) }
     end
   end
 end
@@ -226,25 +249,30 @@ class Transpose;    def exec(tabla); return (@tape.exec(tabla)).transpose; end; 
   
 class MatrizEval
   def exec(tabla)
-    if @expression1.class == Identifier then     
+    if @expression1.class == Identifier then
       variable = @expression1.identifier.t
       matriz = tabla.find(variable)[:valor]
     else
       matriz = @expression1.exec(tabla)
     end
-    exp1 = @expression2.exec(tabla)
     
+    row = matriz.row_size()
+    col = matriz.row(0).size
+    exp1 = @expression2.exec(tabla)
     unless @expression3 == [] then
       exp2 = @expression3.exec(tabla)
+      LimiteMatrizInvalido::new(@expression2) unless (1..row) === exp1 and (1..col) === exp2
       return matriz[exp1-1, exp2-1]
     else
-      if matriz.row_size() == 1 then
+      if row == 1 then
+        LimiteMatrizInvalido::new(@expression2) unless (1..col) === exp1
         return matriz[0, exp1-1]
       end
-      if matriz.column(0).size == 1 then
+      if col == 1 then
+        LimiteMatrizInvalido::new(@expression2) unless (1..row) === exp1
         return matriz[exp1-1, 0]
       end
-      # Matriz sin un valor y no sea ni row ni col
+      OperacionNoDefinida::new(@expression2)
     end
   end
 end
@@ -275,8 +303,6 @@ class For
   end
 end
 
-class Set; def exec(tabla); tabla.update(@identifier.t, @expression.exec(tabla)); end; end
-
 class Matrix # Inmutable object, bye bye ;)
   def []=(i, j, x)
     @rows[i][j] = x
@@ -288,18 +314,23 @@ class SetMatriz
     matriz = tabla.find(@identifier.t)[:valor]
     valor = @expression3.exec(tabla)
     
+    row = matriz.row_size()
+    col = matriz.row(0).size
     exp1 = @expression1.exec(tabla)
     unless @expression2 == [] then
       exp2 = @expression2.exec(tabla)
+      LimiteMatrizInvalido::new(@expression2) unless (1..row) === exp1 and (1..col) === exp2
       matriz[exp1-1, exp2-1] = valor
     else
-      if matriz.row_size() == 1 then
+      if row == 1 then
+        LimiteMatrizInvalido::new(@expression2) unless (1..col) === exp1
         matriz[0, exp1-1] = valor
       end
       if matriz.column(0).size == 1 then
+        LimiteMatrizInvalido::new(@expression2) unless (1..row) === exp1
         matriz[exp1-1, 0] = valor
       end
-      # Matriz sin un valor y no sea ni row ni col
+      OperacionNoDefinida::new(@expression2)
     end
   end
 end
