@@ -28,8 +28,7 @@ def main
       end
       exit -1
     end
-    
-    parser.exec()
+
   rescue ParseError => e
     puts e
     exit -1

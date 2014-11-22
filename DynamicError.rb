@@ -9,9 +9,16 @@ class DivisionCero < DynamicError
   end
 end
 
+class ErrorDeRetorno < DynamicError
+  def initialize(token)
+    print ("Error entre la linea #{token.l} y columna #{token.c}: Funcion no contiene return.")
+    exit -1
+  end
+end
+
 class ErrorLectura < DynamicError
   def initialize(token)
-    print ("Error entre la línea #{token.line} y columna #{token.column}: Error de lectura.")
+    print ("Error entre la linea #{token.l} y columna #{token.c}: Error de lectura.")
     exit -1
   end
 end

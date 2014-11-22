@@ -31,14 +31,17 @@ class Function
     atributos.each {|x, y| tablaNew.insert(x.identifier.t); tablaNew.update(x.identifier.t, y)}
     @instructions.each do |x|
       v = x.exec(tablaNew)
-      return v if x.class == Return
+      return v.value if v.class == Return
     end
+    ErrorDeRetorno::new(@identifier)
   end
 end
 
 class Return
+  attr_accessor :value
   def exec(tabla)
-    @expression.exec(tabla)
+    @value = @expression.exec(tabla)
+    self
   end
 end
 
@@ -46,7 +49,10 @@ class Block
   def exec(tabla)
     newTabla = ValueTable::new(tabla)
     @definitions.each{|e| e.exec(newTabla)}
-    @instructions.each{|e| e.exec(newTabla)}
+    @instructions.each do |x|
+      v = x.exec(newTabla)
+      return v if v.class == Return
+    end
   end
 end
 
@@ -54,7 +60,7 @@ class Definition
   def exec(tabla)
     tabla.insert(@identifier.t)
     unless @expression == [] then
-      result = @expression.exec(tabla)
+      result = clonar(@expression.exec(tabla))
     else
       result = case @type.class.name
       when Number.name then
@@ -73,10 +79,17 @@ end
 
 class Conditional
   def exec(tabla)
+
     if @expression.exec(tabla) then
-      @instructions1.each{|e| e.exec(tabla)}
+    @instructions1.each do |x|
+      v = x.exec(tabla)
+      return v if v.class == Return
+    end
     else
-      @instructions2.each{|e| e.exec(tabla)}   
+    @instructions2.each do |x|
+      v = x.exec(tabla)
+      return v if v.class == Return
+    end
     end
   end
 end
@@ -85,7 +98,10 @@ end
 class While
   def exec(tabla)
     while @expression.exec(tabla) do
-      @instructions.each{|e| e.exec(tabla)}
+      @instructions.each do |x|
+	v = x.exec(tabla)
+	return v if v.class == Return
+      end
     end
   end
 end
@@ -278,7 +294,7 @@ class Not;          def exec(tabla); return (!@expression.exec(tabla)); end; end
   
 class Uminus;       def exec(tabla); return ((-1) * @expression.exec(tabla)); end; end  
   
-class Transpose;    def exec(tabla); return (@tape.exec(tabla)).transpose; end; end
+class Transpose;    def exec(tabla); return (@expression.exec(tabla)).transpose; end; end
   
 class MatrizEval
   def exec(tabla)
@@ -292,8 +308,10 @@ class MatrizEval
     row = matriz.row_size()
     col = matriz.row(0).size
     exp1 = @expression2.exec(tabla)
+    LimiteMatrizInvalido::new(@expression2) unless exp1 % 1 == 0
     unless @expression3 == [] then
       exp2 = @expression3.exec(tabla)
+      LimiteMatrizInvalido::new(@expression2) unless exp2 % 1 == 0
       LimiteMatrizInvalido::new(@expression2) unless (1..row) === exp1 and (1..col) === exp2
       return matriz[exp1-1, exp2-1]
     else
@@ -331,7 +349,10 @@ class For
     matriz = @expression.exec(tabla)
     matriz.each do |x|
       tablaNew.update(@identifier.t, x)
-      @instructions.each{|y| y.exec(tablaNew)}
+      @instructions.each do |y|
+	v = y.exec(tablaNew)
+	return v if v.class == Return
+      end
     end
   end
 end
@@ -350,8 +371,10 @@ class SetMatriz
     row = matriz.row_size()
     col = matriz.row(0).size
     exp1 = @expression1.exec(tabla)
+	     LimiteMatrizInvalido::new(@expression2) unless exp1 % 1 == 0
     unless @expression2 == [] then
       exp2 = @expression2.exec(tabla)
+	     LimiteMatrizInvalido::new(@expression2) unless exp2 % 1 == 0
       LimiteMatrizInvalido::new(@expression2) unless (1..row) === exp1 and (1..col) === exp2
       matriz[exp1-1, exp2-1] = valor
     else
