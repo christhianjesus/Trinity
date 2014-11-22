@@ -35,7 +35,7 @@ end
 class Block
   def exec(tabla)
     newTabla = ValueTable::new(tabla)
-    @definitions.each{|e| e.exec(newTabla)}  
+    @definitions.each{|e| e.exec(newTabla)}
     @instructions.each{|e| e.exec(newTabla)}
   end
 end
@@ -66,7 +66,7 @@ class Conditional
     if @expression.exec(tabla) then
       @instructions1.each{|e| e.exec(tabla)}
     else
-      @instructions2.each{|e| e.exec(tabla)} unless @instructions2 == []      
+      @instructions2.each{|e| e.exec(tabla)}   
     end
   end
 end
@@ -80,15 +80,16 @@ class While
 end
 
 
-class Set; def exec(tabla); tabla.update(@identifier.t,@expression.exec(tabla)); end; end
+class Set; def exec(tabla); tabla.update(@identifier.t, @expression.exec(tabla)); end; end
     
 class Print
   def exec(tabla)
-    @printers.map do |x|
+    @printers.each do |x|
       unless x.class == TkString then 
         print(x.exec(tabla))
       else
-        print(x.t)
+	x.t[0]=''
+        print(x.t.chop)
       end
     end
   end
@@ -100,8 +101,8 @@ class Read
     lectura = STDIN.gets.chomp 
     result = case valor.class.name
     when Fixnum.name then
-      unless /\A\-?\d+(\.\d+)?/.match(lectura) != '' then
-	Error
+      unless (/\A\-?\d+(\.\d+)?$/ =~ lectura) != nil
+	return Error
       end
       lectura.to_f
     when TrueClass.name
@@ -267,7 +268,7 @@ class MatrizEval
       if matriz.row_size() == 1 then
         return matriz[0, exp1-1]
       end
-      if matriz.column(0).size == 1 then
+      if matriz.row(0).size == 1 then
         return matriz[exp1-1, 0]
       end
       # Matriz sin un valor y no sea ni row ni col
@@ -291,15 +292,39 @@ end
 
 class For
   def exec(tabla)
-    
     tablaNew = ValueTable::new(tabla)
-    puts(@identifier)
     tablaNew.insert(@identifier.t);
     matriz = @expression.exec(tabla)
-    print(matriz) 
     matriz.each do |x|
       tablaNew.update(@identifier.t, x)
       @instructions.each{|y| y.exec(tablaNew)}
+    end
+  end
+end
+
+class Matrix # Inmutable object, bye bye ;)
+  def []=(i, j, x)
+    @rows[i][j] = x
+  end
+end
+
+class SetMatriz
+  def exec(tabla)
+    matriz = tabla.find(@identifier.t)[:valor]
+    valor = @expression3.exec(tabla)
+    
+    exp1 = @expression1.exec(tabla)
+    unless @expression2 == [] then
+      exp2 = @expression2.exec(tabla)
+      matriz[exp1-1, exp2-1] = valor
+    else
+      if matriz.row_size() == 1 then
+        matriz[0, exp1-1] = valor
+      end
+      if matriz.row(0).size == 1 then
+        matriz[exp1-1, 0] = valor
+      end
+      # Matriz sin un valor y no sea ni row ni col
     end
   end
 end

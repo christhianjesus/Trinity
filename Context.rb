@@ -65,7 +65,7 @@ class Matriz < Type
       @exps.each do |exps|
         n = exps.length if n.nil?
         err = n != exps.length unless err
-        exps.map {|exp| exp.check(tabla); $ErroresContexto << ErrorDeTipoUnario::new(exp, Number) unless exp.type.class == Number}
+        exps.each {|exp| exp.check(tabla); $ErroresContexto << ErrorDeTipoUnario::new(exp, Number) unless exp.type.class == Number}
       end
       $ErroresContexto << ErrorMatrizMalFormada::new(@exps.first.first) if err
       @row = @exps.length
@@ -266,11 +266,12 @@ end
 
 class Invoke
   def check(tabla)
+    
     identifier = tabla.find(@identifier.t)
     $ErroresContexto << NoDeclarada::new(@identifier) if identifier.nil?
     if @expressions.length == identifier[:parametro].length then
       badthings = [@expressions, identifier[:parametro]].transpose
-      badthings.map {|x, y| x.check(tabla);
+      badthings.each {|x, y| x.check(tabla);
         $ErroresContexto << ErrorDeTipoUnario::new(y, x) unless x.type == y.type} unless @expressions.nil?
     else
       $ErroresContexto << NumeroParamInvalidos::new(@identifier)
@@ -293,8 +294,8 @@ class Conditional
     unless @expression.type.class == Boolean then
       $ErroresContexto << ErrorDeTipoUnario::new(@expression, Boolean)
     end
-    @instructions1.map {|x| x.check(tabla) }
-    @instructions2.map {|x| x.check(tabla) } unless @instructions2.nil?
+    @instructions1.each {|x| x.check(tabla) }
+    @instructions2.each {|x| x.check(tabla) } unless @instructions2.nil?
   end
 end
 
@@ -304,7 +305,7 @@ class While
     unless @expression.type.class == Boolean then
       $ErroresContexto << ErrorDeTipoUnario::new(@expression, Boolean)
     end
-    @instructions.map {|x| x.check(tabla) }
+    @instructions.each {|x| x.check(tabla) }
   end
 end
 
@@ -317,7 +318,7 @@ class For
       $ErroresContexto << ErrorDeTipoUnario::new(@expression, Matriz)
     end
     newTabla.insert(@identifier, Number::new([])) 
-    @instructions.map {|x| x.check(newTabla) }
+    @instructions.each {|x| x.check(newTabla) }
   end
 end
 
@@ -381,7 +382,7 @@ end
 
 class Print
   def check(tabla)
-    @printers.map {|x| x.check(tabla) unless x.class == TkString}
+    @printers.each {|x| x.check(tabla) unless x.class == TkString}
   end
 end
     
@@ -389,8 +390,8 @@ class Block
   def check(tabla)
     newTabla = SymbolicTable::new(tabla)
     tabla.hijos << newTabla
-    @definitions.map {|x| x.check(newTabla) }
-    @instructions.map {|x| x.check(newTabla) }
+    @definitions.each {|x| x.check(newTabla) }
+    @instructions.each {|x| x.check(newTabla) }
   end
 end
 
@@ -411,9 +412,9 @@ end
 class Program
   def check()
     tabla = SymbolicTable::new(nil)
-    @functions.map {|x| x.check(tabla) }
-    @instructions.map {|x| x.check(tabla) }
-    exec()
+    @functions.each {|x| x.check(tabla) }
+    @instructions.each {|x| x.check(tabla) }
+    
   end
 end 
 
@@ -432,9 +433,9 @@ class Function
     tabla.hijos << tablaNew
     @type.check(tabla)
     tablaNew.insert(@return, @type)
-    @parameters.map {|x| x.check(tablaNew); params << x.type}
+    @parameters.each {|x| x.check(tablaNew); params << x.type}
     tabla.insertF(@identifier, @type, params)
     tablaNew.insertF(@identifier, @type, params) unless tablaNew.isMember?(@identifier.t)
-    @instructions.map {|x| x.check(tablaNew) }
+    @instructions.each {|x| x.check(tablaNew) }
   end
 end
