@@ -89,7 +89,7 @@ class Print
         print(x.exec(tabla))
       else
 	x.t[0]=''
-        print(x.t.chop)
+        print(x.t.chop.gsub(/\\n/,"\n").gsub(/\\\"/,"\"").gsub( /\\\\/ , "\\" ))
       end
     end
   end
