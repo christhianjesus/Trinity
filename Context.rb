@@ -266,6 +266,7 @@ end
 
 class Invoke
   def check(tabla)
+    
     identifier = tabla.find(@identifier.t)
     $ErroresContexto << NoDeclarada::new(@identifier) if identifier.nil?
     if @expressions.length == identifier[:parametro].length then
@@ -413,7 +414,7 @@ class Program
     tabla = SymbolicTable::new(nil)
     @functions.each {|x| x.check(tabla) }
     @instructions.each {|x| x.check(tabla) }
-    exec()
+    
   end
 end 
 

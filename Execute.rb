@@ -89,9 +89,37 @@ class Print
       unless x.class == TkString then 
         print(x.exec(tabla))
       else
-        print(x.t)
+        x.t[0] = ''
+        print(x.t.chop)
       end
     end
+  end
+end
+
+class Read
+  def exec(tabla)
+    valor = tabla.find(@identifier.t)[:valor]
+    lectura = STDIN.gets.chomp 
+    result = case valor.class.name
+    when Fixnum.name then
+      unless (/\A\-?\d+(\.\d+)?$/ =~ lectura) != nil
+	return Error
+      end
+      lectura.to_f
+    when TrueClass.name
+      unless (lectura =='true') or  (lectura =='false') then
+	Error
+      end
+      lectura == 'true'
+    when FalseClass.name
+      unless (lectura =='true') or  (lectura =='false') then
+	Error
+      end
+      lectura == 'true'
+    else
+      Error
+    end
+    tabla.update(@identifier.t,result)   
   end
 end
 
