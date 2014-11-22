@@ -111,25 +111,20 @@ class Read
     valor = tabla.find(@identifier.t)[:valor]
     lectura = STDIN.gets.chomp 
     result = case valor.class.name
-    when Fixnum.name then
-      unless (/\A\-?\d+(\.\d+)?$/ =~ lectura) != nil
-	return Error
-      end
-      lectura.to_f
-    when TrueClass.name
-      unless (lectura =='true') or  (lectura =='false') then
-	Error
-      end
-      lectura == 'true'
-    when FalseClass.name
-      unless (lectura =='true') or  (lectura =='false') then
-	Error
-      end
-      lectura == 'true'
-    else
-      Error
+      when Float.name then
+        ErrorLectura::new(@identifier) unless (/\A\-?\d+(\.\d+)?$/ =~ lectura) != nil
+        lectura.to_f
+      when Fixnum.name then
+        ErrorLectura::new(@identifier) unless (/\A\-?\d+(\.\d+)?$/ =~ lectura) != nil
+        lectura.to_f
+      when TrueClass.name then
+        ErrorLectura::new(@identifier) unless (lectura =='true') or  (lectura =='false')
+        lectura == 'true'
+      when FalseClass.name then
+        ErrorLectura::new(@identifier) unless (lectura =='true') or  (lectura =='false') 
+        lectura == 'true'
     end
-    tabla.update(@identifier.t,result)   
+    tabla.update(@identifier.t,result)
   end
 end
 
